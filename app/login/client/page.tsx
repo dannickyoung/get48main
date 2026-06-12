@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/brand/Logo";
 import { LoadingDots } from "@/components/ui/LoadingDots";
+import { OtpInput } from "@/components/ui/OtpInput";
 import { toast } from "@/lib/toast";
 
 export default function ClientLoginPage() {
@@ -100,23 +101,17 @@ export default function ClientLoginPage() {
             <label htmlFor="code" className="text-xs font-semibold uppercase tracking-wider text-faint">
               6-digit code
             </label>
-            <input
-              id="code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              autoFocus
-              maxLength={6}
-              value={code}
-              disabled={status === "verifying"}
-              onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                setCode(v);
-                setStatus("idle");
-                if (v.length === 6) verify(v);
-              }}
-              placeholder="000000"
-              className="mt-2 w-full rounded-lg bg-background px-4 py-3 text-left font-display text-2xl font-semibold tracking-[0.5em] text-foreground ring-1 ring-border transition placeholder:text-faint/50 focus:ring-2 focus:ring-accent disabled:opacity-60"
-            />
+            <div className="mt-2">
+              <OtpInput
+                value={code}
+                disabled={status === "verifying"}
+                onChange={(v) => {
+                  setCode(v);
+                  setStatus("idle");
+                }}
+                onComplete={(v) => verify(v)}
+              />
+            </div>
 
             <button
               type="button"
