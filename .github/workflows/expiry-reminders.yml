@@ -1,0 +1,17 @@
+name: Expiry reminders
+
+# Vercel's Hobby plan doesn't run cron jobs, so we schedule the daily rollover
+# expiry reminder here for free. Hits the app's cron endpoint with the secret.
+on:
+  schedule:
+    - cron: "0 9 * * *" # every day at 09:00 UTC
+  workflow_dispatch: {} # allows manual "Run workflow" from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger reminder digest
+        run: |
+          curl -fsS -X GET "https://get48.io/api/cron/expiry-reminders" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
