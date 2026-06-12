@@ -7,18 +7,17 @@
    ============================================================================ */
 
 @theme {
-  /* Pure neutral greys — no hue tint. Even the darkest is a comfortable dark
-     grey (never near-black). */
-  --color-background: oklch(0.255 0 0);
-  --color-surface: oklch(0.295 0 0);
-  --color-surface-2: oklch(0.335 0 0);
-  --color-surface-3: oklch(0.375 0 0);
-  --color-border: oklch(0.4 0 0);
-  --color-border-strong: oklch(0.5 0 0);
+  /* Supabase-style near-black neutrals — no hue tint, crisp thin borders. */
+  --color-background: oklch(0.185 0 0);
+  --color-surface: oklch(0.223 0 0);
+  --color-surface-2: oklch(0.262 0 0);
+  --color-surface-3: oklch(0.305 0 0);
+  --color-border: oklch(0.32 0 0);
+  --color-border-strong: oklch(0.43 0 0);
 
-  --color-foreground: oklch(0.97 0 0);
-  --color-muted: oklch(0.75 0 0);
-  --color-faint: oklch(0.6 0 0);
+  --color-foreground: oklch(0.96 0 0);
+  --color-muted: oklch(0.72 0 0);
+  --color-faint: oklch(0.54 0 0);
 
   --color-accent: oklch(0.87 0.205 128);
   --color-accent-hover: oklch(0.92 0.19 128);

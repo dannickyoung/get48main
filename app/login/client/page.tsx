@@ -114,8 +114,8 @@ export default function ClientLoginPage() {
                 setStatus("idle");
                 if (v.length === 6) verify(v);
               }}
-              placeholder="••••••"
-              className="mt-2 w-full rounded-lg bg-background px-4 py-3 text-center font-display text-2xl font-semibold tracking-[0.4em] text-foreground ring-1 ring-border transition placeholder:tracking-[0.4em] placeholder:text-faint focus:ring-2 focus:ring-accent disabled:opacity-60"
+              placeholder="000000"
+              className="mt-2 w-full rounded-lg bg-background px-4 py-3 text-left font-display text-2xl font-semibold tracking-[0.5em] text-foreground ring-1 ring-border transition placeholder:text-faint/50 focus:ring-2 focus:ring-accent disabled:opacity-60"
             />
 
             <button
