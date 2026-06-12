@@ -66,7 +66,10 @@ export function MonthlyTermsCard({
                     <span className={r.price != null ? "font-semibold text-accent" : "text-muted"}>
                       {money(r.price ?? retainer.monthly_price)}
                     </span>
-                    <span className="text-xs text-faint group-open:text-accent">Edit</span>
+                    <span className="text-xs text-faint group-open:text-accent">
+                      <span className="group-open:hidden">Edit</span>
+                      <span className="hidden group-open:inline">Close</span>
+                    </span>
                   </div>
                 </summary>
                 <ActionForm
