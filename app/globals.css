@@ -121,6 +121,36 @@
 }
 
 @layer utilities {
+  /* Shimmer skeleton for instant loading states. */
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-surface-2);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklch, var(--color-foreground) 7%, transparent),
+      transparent
+    );
+    animation: shimmer 1.4s infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton::after {
+      animation: none;
+    }
+  }
+
   /* Hide native number spinners (we render custom steppers). */
   .no-spin {
     appearance: textfield;
