@@ -1,6 +1,7 @@
 import { updateRetainer } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 import { money, shortDate } from "@/lib/format";
 import type { Retainer } from "@/lib/types";
 
@@ -56,19 +57,19 @@ export function RetainerTermsCard({
               <NumberField name="rollover_weeks" min={1} defaultValue={retainer.rollover_weeks} className={inputCls} />
             </Field>
             <Field label="Status">
-              <select name="status" defaultValue={retainer.status} className={inputCls}>
+              <select name="status" defaultValue={retainer.status} className={`field-select ${inputCls}`}>
                 <option value="active">Active</option>
                 <option value="paused">Paused</option>
                 <option value="ended">Ended</option>
               </select>
             </Field>
             <div className="col-span-2 flex justify-end">
-              <button
-                type="submit"
+              <SubmitButton
+                pendingLabel="Saving"
                 className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
               >
                 Save terms
-              </button>
+              </SubmitButton>
             </div>
           </form>
         </details>

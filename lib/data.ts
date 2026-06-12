@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { assembleClient, type ClientView } from "@/lib/retainer/assemble";
+import { todaySGT } from "@/lib/time";
 import type { Client, Payment, Retainer, VideoRow } from "@/lib/types";
 
 /** Every client, fully assembled — for the admin overview. */
@@ -20,8 +21,9 @@ export async function getAllClientViews(): Promise<ClientView[]> {
   const vidByClient = groupBy((videos ?? []) as VideoRow[], (v) => v.client_id);
   const payByClient = groupBy((payments ?? []) as Payment[], (p) => p.client_id);
 
+  const asOf = todaySGT();
   return ((clients ?? []) as Client[]).map((c) =>
-    assembleClient(c, retByClient.get(c.id) ?? null, vidByClient.get(c.id) ?? [], payByClient.get(c.id) ?? []),
+    assembleClient(c, retByClient.get(c.id) ?? null, vidByClient.get(c.id) ?? [], payByClient.get(c.id) ?? [], asOf),
   );
 }
 
@@ -43,6 +45,7 @@ export async function getClientView(clientId: string): Promise<ClientView | null
     (retainer as Retainer) ?? null,
     (videos ?? []) as VideoRow[],
     (payments ?? []) as Payment[],
+    todaySGT(),
   );
 }
 

@@ -2,7 +2,9 @@ import Link from "next/link";
 import { logDeliveryQuick } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 import { shortDate } from "@/lib/format";
+import { todaySGTString } from "@/lib/time";
 import type { DeliveryWithClient } from "@/lib/aggregate";
 
 const inputCls =
@@ -15,7 +17,7 @@ export function DeliveriesFeed({
   deliveries: DeliveryWithClient[];
   clients: { id: string; name: string }[];
 }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todaySGTString();
 
   return (
     <div className="space-y-6">
@@ -24,7 +26,7 @@ export function DeliveriesFeed({
           action={logDeliveryQuick}
           className="grid grid-cols-2 gap-3 rounded-2xl bg-surface p-5 ring-1 ring-border sm:grid-cols-[1.2fr_150px_1.6fr_96px_auto] sm:p-6"
         >
-          <select name="client_id" required defaultValue="" className={inputCls} aria-label="Client">
+          <select name="client_id" required defaultValue="" className={`field-select ${inputCls}`} aria-label="Client">
             <option value="" disabled>
               Choose client…
             </option>
@@ -37,9 +39,12 @@ export function DeliveriesFeed({
           <DateField name="delivered_on" defaultValue={today} required className={inputCls} />
           <input type="text" name="title" placeholder="Title / concept (optional)" className={inputCls} />
           <NumberField name="quantity" min={1} defaultValue={1} className={inputCls} aria-label="Quantity" />
-          <button type="submit" className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
+          <SubmitButton
+            pendingLabel="Logging"
+            className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
+          >
             Log delivery
-          </button>
+          </SubmitButton>
         </form>
       )}
 

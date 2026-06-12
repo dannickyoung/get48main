@@ -19,10 +19,11 @@ exception
   when others then null; -- job didn't exist yet
 end $$;
 
--- Every day at 09:00 UTC, hit the reminder endpoint with the shared secret.
+-- Every day at 09:00 SGT (= 01:00 UTC), hit the reminder endpoint with the secret.
+-- pg_cron runs in UTC, so 09:00 Singapore time is scheduled as 01:00 UTC.
 select cron.schedule(
   'expiry-reminders-daily',
-  '0 9 * * *',
+  '0 1 * * *',
   $$
   select net.http_get(
     url     := 'https://get48.io/api/cron/expiry-reminders',

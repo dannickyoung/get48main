@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProfile } from "@/lib/auth";
+import { todaySGTString } from "@/lib/time";
 
 async function assertAdmin() {
   const profile = await getProfile();
@@ -237,7 +238,7 @@ export async function setPayment(input: {
 }) {
   await assertAdmin();
   const supabase = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todaySGTString();
   const { error } = await supabase
     .from("payments")
     .upsert(

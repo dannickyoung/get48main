@@ -1,7 +1,9 @@
 import { logDelivery, updateDelivery, deleteDelivery } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 import { shortDate } from "@/lib/format";
+import { todaySGTString } from "@/lib/time";
 import type { VideoRow } from "@/lib/types";
 
 const inputCls =
@@ -16,7 +18,7 @@ export function DeliveriesLog({
   videos: VideoRow[];
   readOnly: boolean;
 }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todaySGTString();
 
   return (
     <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
@@ -33,9 +35,9 @@ export function DeliveriesLog({
           <DateField name="delivered_on" defaultValue={today} required className={inputCls} />
           <input type="text" name="title" placeholder="Title / concept (optional)" className={inputCls} />
           <NumberField name="quantity" min={1} defaultValue={1} className={inputCls} aria-label="Quantity" />
-          <button type="submit" className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
+          <SubmitButton className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
             Log
-          </button>
+          </SubmitButton>
         </form>
       )}
 
@@ -65,9 +67,12 @@ export function DeliveriesLog({
                     <input type="text" name="title" defaultValue={v.title ?? ""} placeholder="Title / concept" className={inputCls} />
                     <NumberField name="quantity" min={1} defaultValue={v.quantity} className={inputCls} aria-label="Quantity" />
                     <input type="url" name="link" defaultValue={v.link ?? ""} placeholder="Link (optional)" className={`${inputCls} sm:col-span-3`} />
-                    <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover sm:col-span-3 sm:justify-self-start">
+                    <SubmitButton
+                      pendingLabel="Saving"
+                      className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover sm:col-span-3 sm:justify-self-start"
+                    >
                       Save changes
-                    </button>
+                    </SubmitButton>
                   </form>
                   <DeleteButton videoId={v.id} clientId={clientId} />
                 </div>

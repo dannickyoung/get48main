@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { assembleClient, type ClientView } from "@/lib/retainer/assemble";
+import { todaySGT } from "@/lib/time";
 import type { Client, Payment, Retainer, VideoRow } from "@/lib/types";
 
 /**
@@ -27,7 +28,8 @@ export async function getAllClientViewsAdmin(): Promise<ClientView[]> {
   const payByClient = new Map<string, Payment[]>();
   for (const p of (payments ?? []) as Payment[]) (payByClient.get(p.client_id) ?? payByClient.set(p.client_id, []).get(p.client_id)!).push(p);
 
+  const asOf = todaySGT();
   return ((clients ?? []) as Client[]).map((c) =>
-    assembleClient(c, retByClient.get(c.id) ?? null, vidByClient.get(c.id) ?? [], payByClient.get(c.id) ?? []),
+    assembleClient(c, retByClient.get(c.id) ?? null, vidByClient.get(c.id) ?? [], payByClient.get(c.id) ?? [], asOf),
   );
 }

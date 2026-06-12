@@ -2,13 +2,15 @@ import Link from "next/link";
 import { addClient } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
+import { todaySGTString } from "@/lib/time";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 const inputCls =
   "w-full rounded-lg bg-background px-3.5 py-2.5 text-sm text-foreground ring-1 ring-border transition placeholder:text-faint focus:ring-2 focus:ring-accent";
 const labelCls = "text-xs font-semibold uppercase tracking-wider text-faint";
 
 export default function NewClientPage() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todaySGTString();
 
   return (
     <div className="rise mx-auto max-w-2xl space-y-6">
@@ -69,12 +71,6 @@ export default function NewClientPage() {
               </div>
             </label>
             <label className="block">
-              <span className={labelCls}>Overage / video</span>
-              <div className="mt-1.5">
-                <NumberField name="overage_rate" min={0} step={25} defaultValue={0} className={inputCls} />
-              </div>
-            </label>
-            <label className="block">
               <span className={labelCls}>Rollover cap</span>
               <div className="mt-1.5">
                 <NumberField name="rollover_cap" min={0} defaultValue={5} className={inputCls} />
@@ -98,12 +94,12 @@ export default function NewClientPage() {
           <Link href="/admin" className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-border transition hover:text-foreground">
             Cancel
           </Link>
-          <button
-            type="submit"
+          <SubmitButton
+            pendingLabel="Creating"
             className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
           >
             Create client
-          </button>
+          </SubmitButton>
         </div>
       </form>
     </div>
