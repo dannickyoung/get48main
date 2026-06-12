@@ -136,6 +136,30 @@ export async function updateClient(clientId: string, formData: FormData) {
   revalidatePath(`/clients/${clientId}`);
 }
 
+/** Override one billing month's videos/price (blank field = use retainer default). */
+export async function setMonthTerms(clientId: string, periodIndex: number, formData: FormData) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const vRaw = str(formData, "videos_per_month");
+  const pRaw = str(formData, "monthly_price");
+  const videos_per_month = vRaw === "" ? null : Math.max(0, Number(vRaw));
+  const monthly_price = pRaw === "" ? null : Math.max(0, Number(pRaw));
+
+  if (videos_per_month === null && monthly_price === null) {
+    await supabase.from("retainer_months").delete().eq("client_id", clientId).eq("period_index", periodIndex);
+  } else {
+    const { error } = await supabase
+      .from("retainer_months")
+      .upsert(
+        { client_id: clientId, period_index: periodIndex, videos_per_month, monthly_price },
+        { onConflict: "client_id,period_index" },
+      );
+    if (error) throw new Error(error.message);
+  }
+  revalidatePath(`/clients/${clientId}`);
+  revalidatePath("/admin");
+}
+
 export async function updateRetainer(clientId: string, formData: FormData) {
   await assertAdmin();
   const supabase = await createClient();

@@ -30,6 +30,8 @@ export type RetainerTerms = {
   rolloverCap: number;
   /** Weeks a rolled-over video survives past its accrual month-end. Default 8. */
   rolloverWeeks: number;
+  /** Per-month allotment overrides keyed by 0-based period index. */
+  monthlyVideos?: Record<number, number>;
 };
 
 export type Delivery = {
@@ -125,10 +127,13 @@ export function computeRetainer(
     videosPerMonth: termsInput.videosPerMonth,
     rolloverCap: termsInput.rolloverCap ?? DEFAULT_ROLLOVER_CAP,
     rolloverWeeks: termsInput.rolloverWeeks ?? DEFAULT_ROLLOVER_WEEKS,
+    monthlyVideos: termsInput.monthlyVideos ?? {},
   };
 
   const start = parseDateOnly(terms.startDate);
   const cap = terms.rolloverCap;
+  // Per-month allotment (override or the retainer default).
+  const videosForPeriod = (k: number) => terms.monthlyVideos[k] ?? terms.videosPerMonth;
 
   // Sorted deliveries, normalised.
   const sorted = [...deliveries]
@@ -146,10 +151,10 @@ export function computeRetainer(
         periodStart: start,
         periodEnd: addMonths(start, 1),
         daysLeftInPeriod: differenceInCalendarDays(start, asOf),
-        allotment: terms.videosPerMonth,
+        allotment: videosForPeriod(0),
         usedFromFresh: 0,
         usedFromRollover: 0,
-        freshRemaining: terms.videosPerMonth,
+        freshRemaining: videosForPeriod(0),
         totalUsedThisPeriod: 0,
         overageThisPeriod: 0,
         rollover: { available: 0, nextExpiry: null, nextExpiryCount: 0, daysToNextExpiry: null },
@@ -178,7 +183,7 @@ export function computeRetainer(
     const pEnd = addMonths(start, k + 1);
     const rolledIn = sumLots(lots);
 
-    let fresh = terms.videosPerMonth;
+    let fresh = videosForPeriod(k);
     let usedFromFresh = 0;
     let usedFromRollover = 0;
     let overage = 0;
@@ -243,7 +248,7 @@ export function computeRetainer(
       index: k,
       start: pStart,
       end: pEnd,
-      allotment: terms.videosPerMonth,
+      allotment: videosForPeriod(k),
       rolledIn,
       usedFromFresh,
       usedFromRollover,
@@ -258,7 +263,7 @@ export function computeRetainer(
   // ----- live (current, unfinished) month -----
   const cStart = addMonths(start, currentIndex);
   const cEnd = addMonths(start, currentIndex + 1);
-  let fresh = terms.videosPerMonth;
+  let fresh = videosForPeriod(currentIndex);
   let usedFromFresh = 0;
   let usedFromRollover = 0;
   let overageThisPeriod = 0;
@@ -309,7 +314,7 @@ export function computeRetainer(
     periodStart: cStart,
     periodEnd: cEnd,
     daysLeftInPeriod: Math.max(0, differenceInCalendarDays(cEnd, asOf)),
-    allotment: terms.videosPerMonth,
+    allotment: videosForPeriod(currentIndex),
     usedFromFresh,
     usedFromRollover,
     freshRemaining: fresh,

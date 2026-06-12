@@ -4,6 +4,7 @@ import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
 import { todaySGTString } from "@/lib/time";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { ActionForm } from "@/components/ui/ActionForm";
 
 const inputCls =
   "w-full rounded-lg bg-background px-3.5 py-2.5 text-sm text-foreground ring-1 ring-border transition placeholder:text-faint focus:ring-2 focus:ring-accent";
@@ -25,7 +26,7 @@ export default function NewClientPage() {
         </p>
       </div>
 
-      <form action={addClient} className="space-y-6">
+      <ActionForm action={addClient} error="Couldn't create client" className="space-y-6">
         <div>
           <h2 className="mb-3 px-1 font-display text-sm font-semibold uppercase tracking-wider text-faint">Client</h2>
           <div className="grid grid-cols-1 gap-4 rounded-2xl bg-surface p-6 ring-1 ring-border sm:grid-cols-2">
@@ -101,7 +102,7 @@ export default function NewClientPage() {
             Create client
           </SubmitButton>
         </div>
-      </form>
+      </ActionForm>
     </div>
   );
 }

@@ -48,6 +48,15 @@ export type Payment = {
   created_at: string;
 };
 
+export type RetainerMonth = {
+  id: string;
+  client_id: string;
+  period_index: number;
+  videos_per_month: number | null;
+  monthly_price: number | null;
+  created_at: string;
+};
+
 export type Profile = {
   id: string;
   email: string;

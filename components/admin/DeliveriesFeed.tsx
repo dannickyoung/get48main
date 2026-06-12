@@ -3,6 +3,7 @@ import { logDeliveryQuick } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { ActionForm } from "@/components/ui/ActionForm";
 import { shortDate } from "@/lib/format";
 import { todaySGTString } from "@/lib/time";
 import type { DeliveryWithClient } from "@/lib/aggregate";
@@ -22,8 +23,9 @@ export function DeliveriesFeed({
   return (
     <div className="space-y-6">
       {clients.length > 0 && (
-        <form
+        <ActionForm
           action={logDeliveryQuick}
+          success="Delivery logged"
           className="grid grid-cols-2 gap-3 rounded-2xl bg-surface p-5 ring-1 ring-border sm:grid-cols-[1.2fr_150px_1.6fr_96px_auto] sm:p-6"
         >
           <select name="client_id" required defaultValue="" className={`field-select ${inputCls}`} aria-label="Client">
@@ -45,7 +47,7 @@ export function DeliveriesFeed({
           >
             Log delivery
           </SubmitButton>
-        </form>
+        </ActionForm>
       )}
 
       <section className="rounded-2xl bg-surface p-5 ring-1 ring-border sm:p-6">

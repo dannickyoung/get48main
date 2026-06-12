@@ -5,7 +5,7 @@
  */
 import { addMonths } from "date-fns";
 import { computeRetainer, parseDateOnly, type Delivery, type RetainerComputation } from "./engine";
-import type { Client, Payment, PaymentKind, Retainer, VideoRow } from "@/lib/types";
+import type { Client, Payment, PaymentKind, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
 
 export type ScheduledPayment = {
   periodIndex: number;
@@ -34,6 +34,7 @@ export type ClientView = {
   computation: RetainerComputation | null;
   payments: ScheduledPayment[];
   videos: VideoRow[];
+  months: RetainerMonth[];
   outstanding: number;
   health: HealthStatus;
 };
@@ -44,9 +45,10 @@ export function assembleClient(
   videos: VideoRow[],
   payments: Payment[],
   asOf: Date = new Date(),
+  months: RetainerMonth[] = [],
 ): ClientView {
   if (!retainer) {
-    return { client, retainer: null, computation: null, payments: [], videos, outstanding: 0, health: "no_retainer" };
+    return { client, retainer: null, computation: null, payments: [], videos, months, outstanding: 0, health: "no_retainer" };
   }
 
   const deliveries: Delivery[] = videos.map((v) => ({
@@ -56,18 +58,27 @@ export function assembleClient(
     title: v.title,
   }));
 
+  // Per-month overrides for allotment (engine) and price (payments).
+  const videoOverrides: Record<number, number> = {};
+  const priceOverrides: Record<number, number> = {};
+  for (const m of months) {
+    if (m.videos_per_month != null) videoOverrides[m.period_index] = m.videos_per_month;
+    if (m.monthly_price != null) priceOverrides[m.period_index] = Number(m.monthly_price);
+  }
+
   const computation = computeRetainer(
     {
       startDate: retainer.start_date,
       videosPerMonth: retainer.videos_per_month,
       rolloverCap: retainer.rollover_cap,
       rolloverWeeks: retainer.rollover_weeks,
+      monthlyVideos: videoOverrides,
     },
     deliveries,
     asOf,
   );
 
-  const schedule = buildPaymentSchedule(retainer, payments, computation, asOf);
+  const schedule = buildPaymentSchedule(retainer, payments, computation, asOf, priceOverrides);
   const outstanding = schedule.filter((p) => p.status === "pending").reduce((s, p) => s + p.amount, 0);
 
   return {
@@ -76,6 +87,7 @@ export function assembleClient(
     computation,
     payments: schedule,
     videos,
+    months,
     outstanding,
     health: deriveHealth(retainer, computation, schedule),
   };
@@ -86,9 +98,9 @@ function buildPaymentSchedule(
   payments: Payment[],
   computation: RetainerComputation,
   asOf: Date,
+  priceOverrides: Record<number, number> = {},
 ): ScheduledPayment[] {
   const start = parseDateOnly(retainer.start_date);
-  const half = Number(retainer.monthly_price) / 2;
   const lastIndex = computation.current.state === "active" ? computation.current.periodIndex : -1;
 
   const stored = new Map<string, Payment>();
@@ -98,6 +110,7 @@ function buildPaymentSchedule(
   for (let k = 0; k <= lastIndex; k++) {
     const periodStart = addMonths(start, k);
     const periodEnd = addMonths(start, k + 1);
+    const half = (priceOverrides[k] ?? Number(retainer.monthly_price)) / 2;
     for (const kind of ["deposit", "balance"] as PaymentKind[]) {
       const dueDate = kind === "deposit" ? periodStart : periodEnd;
       const rec = stored.get(`${k}:${kind}`);

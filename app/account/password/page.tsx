@@ -1,13 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { setInitialPassword } from "@/app/actions";
 import { Logo } from "@/components/brand/Logo";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { LoadingDots } from "@/components/ui/LoadingDots";
+import { toast } from "@/lib/toast";
 
 export default function ChangePasswordPage() {
   const [state, action, pending] = useActionState(setInitialPassword, {});
+  const seen = useRef(state);
+  useEffect(() => {
+    if (state === seen.current) return;
+    seen.current = state;
+    if (state.error) toast.error(state.error);
+  }, [state]);
 
   return (
     <main className="flex-1 grid place-items-center px-5 py-16">

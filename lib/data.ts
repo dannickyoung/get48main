@@ -1,18 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { assembleClient, type ClientView } from "@/lib/retainer/assemble";
 import { todaySGT } from "@/lib/time";
-import type { Client, Payment, Retainer, VideoRow } from "@/lib/types";
+import type { Client, Payment, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
 
 /** Every client, fully assembled — for the admin overview. */
 export async function getAllClientViews(): Promise<ClientView[]> {
   const supabase = await createClient();
 
-  const [{ data: clients }, { data: retainers }, { data: videos }, { data: payments }] =
+  const [{ data: clients }, { data: retainers }, { data: videos }, { data: payments }, { data: months }] =
     await Promise.all([
       supabase.from("clients").select("*").order("created_at", { ascending: true }),
       supabase.from("retainers").select("*"),
       supabase.from("videos").select("*"),
       supabase.from("payments").select("*"),
+      supabase.from("retainer_months").select("*"),
     ]);
 
   const retByClient = new Map<string, Retainer>();
@@ -20,10 +21,18 @@ export async function getAllClientViews(): Promise<ClientView[]> {
 
   const vidByClient = groupBy((videos ?? []) as VideoRow[], (v) => v.client_id);
   const payByClient = groupBy((payments ?? []) as Payment[], (p) => p.client_id);
+  const monByClient = groupBy((months ?? []) as RetainerMonth[], (m) => m.client_id);
 
   const asOf = todaySGT();
   return ((clients ?? []) as Client[]).map((c) =>
-    assembleClient(c, retByClient.get(c.id) ?? null, vidByClient.get(c.id) ?? [], payByClient.get(c.id) ?? [], asOf),
+    assembleClient(
+      c,
+      retByClient.get(c.id) ?? null,
+      vidByClient.get(c.id) ?? [],
+      payByClient.get(c.id) ?? [],
+      asOf,
+      monByClient.get(c.id) ?? [],
+    ),
   );
 }
 
@@ -34,10 +43,11 @@ export async function getClientView(clientId: string): Promise<ClientView | null
   const { data: client } = await supabase.from("clients").select("*").eq("id", clientId).maybeSingle();
   if (!client) return null;
 
-  const [{ data: retainer }, { data: videos }, { data: payments }] = await Promise.all([
+  const [{ data: retainer }, { data: videos }, { data: payments }, { data: months }] = await Promise.all([
     supabase.from("retainers").select("*").eq("client_id", clientId).maybeSingle(),
     supabase.from("videos").select("*").eq("client_id", clientId).order("delivered_on", { ascending: false }),
     supabase.from("payments").select("*").eq("client_id", clientId),
+    supabase.from("retainer_months").select("*").eq("client_id", clientId),
   ]);
 
   return assembleClient(
@@ -46,6 +56,7 @@ export async function getClientView(clientId: string): Promise<ClientView | null
     (videos ?? []) as VideoRow[],
     (payments ?? []) as Payment[],
     todaySGT(),
+    (months ?? []) as RetainerMonth[],
   );
 }
 

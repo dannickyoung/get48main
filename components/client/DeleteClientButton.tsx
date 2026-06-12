@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { deleteClient } from "@/app/actions";
+import { toast } from "@/lib/toast";
 
 export function DeleteClientButton({ clientId, name }: { clientId: string; name: string }) {
   const [armed, setArmed] = useState(false);
@@ -23,7 +24,17 @@ export function DeleteClientButton({ clientId, name }: { clientId: string; name:
       <span className="text-sm text-muted">Delete {name} and all records?</span>
       <button
         disabled={pending}
-        onClick={() => start(() => deleteClient(clientId))}
+        onClick={() =>
+          start(async () => {
+            try {
+              await deleteClient(clientId);
+            } catch (e) {
+              const digest = (e as { digest?: string })?.digest;
+              if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) throw e;
+              toast.error("Couldn't delete client");
+            }
+          })
+        }
         className="rounded-lg bg-bad px-3.5 py-2 text-sm font-semibold text-background transition hover:opacity-90 disabled:opacity-50"
         style={{ color: "var(--color-background)" }}
       >

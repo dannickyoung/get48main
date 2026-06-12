@@ -2,6 +2,7 @@ import { logDelivery, updateDelivery } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { ActionForm } from "@/components/ui/ActionForm";
 import { DeleteDeliveryButton } from "@/components/client/DeleteDeliveryButton";
 import { shortDate } from "@/lib/format";
 import { todaySGTString } from "@/lib/time";
@@ -29,8 +30,9 @@ export function DeliveriesLog({
       </div>
 
       {!readOnly && (
-        <form
+        <ActionForm
           action={logDelivery.bind(null, clientId)}
+          success="Delivery logged"
           className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-surface-2 p-4 sm:grid-cols-[150px_1fr_96px_auto]"
         >
           <DateField name="delivered_on" defaultValue={today} required className={inputCls} />
@@ -39,7 +41,7 @@ export function DeliveriesLog({
           <SubmitButton className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
             Log
           </SubmitButton>
-        </form>
+        </ActionForm>
       )}
 
       <ul className="mt-5 divide-y divide-border">
@@ -60,8 +62,9 @@ export function DeliveriesLog({
                   <Row v={v} editable />
                 </summary>
                 <div className="pb-4">
-                  <form
+                  <ActionForm
                     action={updateDelivery.bind(null, v.id, clientId)}
+                    success="Delivery updated"
                     className="grid grid-cols-2 gap-3 sm:grid-cols-[150px_1fr_96px]"
                   >
                     <DateField name="delivered_on" defaultValue={v.delivered_on} className={inputCls} />
@@ -77,7 +80,7 @@ export function DeliveriesLog({
                         Save changes
                       </SubmitButton>
                     </div>
-                  </form>
+                  </ActionForm>
                 </div>
               </details>
             )}

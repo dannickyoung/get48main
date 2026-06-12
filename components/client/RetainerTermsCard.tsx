@@ -2,6 +2,7 @@ import { updateRetainer } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { ActionForm } from "@/components/ui/ActionForm";
 import { money, shortDate } from "@/lib/format";
 import type { Retainer } from "@/lib/types";
 
@@ -43,8 +44,9 @@ export function RetainerTermsCard({
           <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover">
             <span className="transition group-open:rotate-45">+</span> Edit terms
           </summary>
-          <form
+          <ActionForm
             action={updateRetainer.bind(null, retainer.client_id)}
+            success="Retainer terms updated"
             className="mt-4 grid grid-cols-2 gap-4 rounded-xl bg-surface-2 p-4"
           >
             <Field label="Start date">
@@ -80,7 +82,7 @@ export function RetainerTermsCard({
                 Save terms
               </SubmitButton>
             </div>
-          </form>
+          </ActionForm>
         </details>
       )}
     </section>

@@ -10,6 +10,7 @@ export function NumberField({
   max,
   step = 1,
   required,
+  placeholder,
   className = "",
   "aria-label": ariaLabel,
 }: {
@@ -19,6 +20,7 @@ export function NumberField({
   max?: number;
   step?: number;
   required?: boolean;
+  placeholder?: string;
   className?: string;
   "aria-label"?: string;
 }) {
@@ -44,6 +46,7 @@ export function NumberField({
         max={max}
         step={step}
         required={required}
+        placeholder={placeholder}
         aria-label={ariaLabel}
         className={`no-spin pr-9 ${className}`}
       />

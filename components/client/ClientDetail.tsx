@@ -7,6 +7,7 @@ import { HistoryCard } from "@/components/client/HistoryCard";
 import { UtilizationTrend } from "@/components/client/UtilizationTrend";
 import { DeliveriesLog } from "@/components/client/DeliveriesLog";
 import { RetainerTermsCard } from "@/components/client/RetainerTermsCard";
+import { MonthlyTermsCard } from "@/components/client/MonthlyTermsCard";
 import { AdminClientControls } from "@/components/client/AdminClientControls";
 import type { ClientView } from "@/lib/retainer/assemble";
 
@@ -74,6 +75,14 @@ export function ClientDetail({
             cycleStart={computation.current.periodStart}
             cycleEnd={computation.current.periodEnd}
           />
+
+          {!readOnly && (
+            <MonthlyTermsCard
+              retainer={retainer}
+              months={view.months}
+              currentIndex={computation.current.periodIndex}
+            />
+          )}
 
           {!readOnly && <AdminClientControls client={client} />}
         </>
