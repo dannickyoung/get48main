@@ -108,12 +108,13 @@ export async function addClient(formData: FormData) {
   });
   if (rErr) throw new Error(rErr.message);
 
-  // Best-effort: pre-create the auth user so the client can request a magic link.
+  // Pre-create a confirmed auth user so the client is never "new" at sign-in —
+  // that way they always get the OTP-code email (not the signup-confirmation one).
   try {
     const admin = createAdminClient();
-    await admin.auth.admin.inviteUserByEmail(email);
+    await admin.auth.admin.createUser({ email, email_confirm: true });
   } catch {
-    /* inviting is optional; client can self-request a link from /login */
+    /* user may already exist; they can still request a code from /login/client */
   }
 
   revalidatePath("/admin");
