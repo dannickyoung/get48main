@@ -50,15 +50,16 @@
     color-scheme: dark;
   }
 
-  /* Calendar picker indicator — tinted to match, brightens on hover. */
+  /* Calendar picker indicator — forced white to match the dark UI. */
   input[type="date"]::-webkit-calendar-picker-indicator {
-    opacity: 0.5;
+    filter: invert(1) brightness(1.4);
+    opacity: 0.55;
     cursor: pointer;
     transition: opacity 0.15s ease;
   }
   input[type="date"]:hover::-webkit-calendar-picker-indicator,
   input[type="date"]:focus::-webkit-calendar-picker-indicator {
-    opacity: 0.9;
+    opacity: 1;
   }
 
   /* Number steppers sit flush and inherit the dark scheme. */

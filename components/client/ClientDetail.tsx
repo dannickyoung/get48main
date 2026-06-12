@@ -4,6 +4,7 @@ import { RolloverHero } from "@/components/client/RolloverHero";
 import { ThisMonthCard } from "@/components/client/ThisMonthCard";
 import { PaymentsCard } from "@/components/client/PaymentsCard";
 import { HistoryCard } from "@/components/client/HistoryCard";
+import { UtilizationTrend } from "@/components/client/UtilizationTrend";
 import { DeliveriesLog } from "@/components/client/DeliveriesLog";
 import { RetainerTermsCard } from "@/components/client/RetainerTermsCard";
 import { AdminClientControls } from "@/components/client/AdminClientControls";
@@ -51,6 +52,8 @@ export function ClientDetail({
             <RolloverHero computation={computation} />
             <ThisMonthCard computation={computation} />
           </div>
+
+          <UtilizationTrend computation={computation} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <PaymentsCard

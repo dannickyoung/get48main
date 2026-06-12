@@ -1,6 +1,7 @@
 import { RolloverHero } from "@/components/client/RolloverHero";
 import { ThisMonthCard } from "@/components/client/ThisMonthCard";
 import { HistoryCard } from "@/components/client/HistoryCard";
+import { UtilizationTrend } from "@/components/client/UtilizationTrend";
 import { RetainerTermsCard } from "@/components/client/RetainerTermsCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { ClientView } from "@/lib/retainer/assemble";
@@ -23,6 +24,7 @@ export function MyRetainer({ view }: { view: ClientView }) {
         <RolloverHero computation={computation} />
         <ThisMonthCard computation={computation} />
       </div>
+      <UtilizationTrend computation={computation} />
       <HistoryCard computation={computation} />
       <RetainerTermsCard retainer={retainer} readOnly />
     </div>

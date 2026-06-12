@@ -1,4 +1,4 @@
-import { ViewGrid, Group, CreditCard, RefreshDouble, MediaVideo, Settings, Globe } from "iconoir-react";
+import { ViewGrid, Group, CreditCard, RefreshDouble, MediaVideo, Settings, Globe, GraphUp } from "iconoir-react";
 
 const sz = { width: 19, height: 19, strokeWidth: 1.7 };
 
@@ -8,6 +8,7 @@ export const Icons = {
   payments: () => <CreditCard {...sz} />,
   rollovers: () => <RefreshDouble {...sz} />,
   deliveries: () => <MediaVideo {...sz} />,
+  trends: () => <GraphUp {...sz} />,
   settings: () => <Settings {...sz} />,
   retainer: () => <Globe {...sz} />,
 };

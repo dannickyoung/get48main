@@ -2,7 +2,7 @@ import Link from "next/link";
 import { NavArrowRight } from "iconoir-react";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { UsageMeter } from "@/components/ui/UsageMeter";
-import { money, compactDate } from "@/lib/format";
+import { compactDate } from "@/lib/format";
 import type { ClientView } from "@/lib/retainer/assemble";
 
 export function ClientRow({ view, hrefBase = "/clients" }: { view: ClientView; hrefBase?: string }) {
@@ -12,7 +12,7 @@ export function ClientRow({ view, hrefBase = "/clients" }: { view: ClientView; h
   return (
     <Link
       href={`${hrefBase}/${client.id}`}
-      className="group grid grid-cols-2 items-center gap-4 rounded-lg bg-surface p-4 ring-1 ring-border transition hover:bg-surface-2 hover:ring-border-strong sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_130px_150px] sm:gap-5 sm:p-5"
+      className="group flex flex-col gap-3 rounded-lg bg-surface p-4 ring-1 ring-border transition hover:bg-surface-2 hover:ring-border-strong sm:grid sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_16px] sm:items-center sm:gap-x-8 sm:p-5"
     >
       {/* Identity */}
       <div className="min-w-0">
@@ -35,7 +35,7 @@ export function ClientRow({ view, hrefBase = "/clients" }: { view: ClientView; h
       </div>
 
       {/* Rollover OR overage (mutually exclusive) */}
-      <div className="hidden text-sm sm:block">
+      <div className="min-w-0 text-sm">
         {cur && cur.rollover.available > 0 ? (
           <>
             <div className="font-display font-semibold tnum text-accent">{cur.rollover.available} rolling</div>
@@ -52,13 +52,14 @@ export function ClientRow({ view, hrefBase = "/clients" }: { view: ClientView; h
       </div>
 
       {/* Status */}
-      <div className="col-span-2 flex items-center justify-between gap-3 border-t border-border pt-3 sm:col-span-1 sm:justify-end sm:border-0 sm:pt-0">
-        {view.outstanding > 0 && <span className="text-xs font-semibold text-warn tnum sm:hidden">{money(view.outstanding)} due</span>}
+      <div className="min-w-0">
         <StatusPill health={view.health} />
-        <span className="text-faint transition group-hover:translate-x-0.5 group-hover:text-foreground">
-          <NavArrowRight width={16} height={16} />
-        </span>
       </div>
+
+      {/* Chevron */}
+      <span className="hidden text-faint transition group-hover:translate-x-0.5 group-hover:text-foreground sm:block">
+        <NavArrowRight width={16} height={16} />
+      </span>
     </Link>
   );
 }

@@ -37,7 +37,7 @@ export async function setInitialPassword(
   });
   if (error) return { error: error.message };
 
-  redirect("/");
+  redirect("/dashboard");
 }
 
 /** Change password from Settings (already-authenticated admin). */

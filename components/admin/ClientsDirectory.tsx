@@ -93,7 +93,7 @@ export function ClientsDirectory({ clients }: { clients: ClientSummary[] }) {
             <li key={c.id}>
               <Link
                 href={`/clients/${c.id}`}
-                className="group grid grid-cols-2 items-center gap-4 rounded-lg bg-surface p-4 ring-1 ring-border transition hover:bg-surface-2 hover:ring-border-strong sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_130px_150px] sm:gap-5 sm:p-5"
+                className="group flex flex-col gap-3 rounded-lg bg-surface p-4 ring-1 ring-border transition hover:bg-surface-2 hover:ring-border-strong sm:grid sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_16px] sm:items-center sm:gap-x-8 sm:p-5"
               >
                 <div className="min-w-0">
                   <div className="truncate font-display text-[17px] font-semibold tracking-tight">{c.name}</div>
@@ -111,7 +111,7 @@ export function ClientsDirectory({ clients }: { clients: ClientSummary[] }) {
                     <span className="text-xs text-faint">No retainer</span>
                   )}
                 </div>
-                <div className="hidden text-sm sm:block">
+                <div className="min-w-0 text-sm">
                   {c.rollover > 0 ? (
                     <>
                       <div className="font-display font-semibold tnum text-accent">{c.rollover} rolling</div>
@@ -126,13 +126,12 @@ export function ClientsDirectory({ clients }: { clients: ClientSummary[] }) {
                     <span className="text-xs text-faint">—</span>
                   )}
                 </div>
-                <div className="col-span-2 flex items-center justify-between gap-3 border-t border-border pt-3 sm:col-span-1 sm:justify-end sm:border-0 sm:pt-0">
-                  {c.hasOutstanding && <span className="text-xs font-semibold text-warn tnum sm:hidden">{c.outstanding} due</span>}
+                <div className="min-w-0">
                   <StatusPill health={c.health} />
-                  <span className="text-faint transition group-hover:translate-x-0.5 group-hover:text-foreground">
-                    <NavArrowRight width={16} height={16} />
-                  </span>
                 </div>
+                <span className="hidden text-faint transition group-hover:translate-x-0.5 group-hover:text-foreground sm:block">
+                  <NavArrowRight width={16} height={16} />
+                </span>
               </Link>
             </li>
           ))}
