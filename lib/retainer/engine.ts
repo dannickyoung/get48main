@@ -15,9 +15,9 @@
  *   3. No more than `rolloverCap` (5) rolled-over videos may be held at once;
  *      anything beyond the cap is forfeited at month-end.
  *
- * Consumption order is client-favourable: a delivered video is drawn from
- * soonest-to-expire rollover credits first, then from the current month's fresh
- * allotment. Anything beyond what's available is an overage (billable extra).
+ * Consumption order: a delivered video is drawn from the current month's fresh
+ * allotment first, then from the rollover buffer (soonest-to-expire first).
+ * Anything beyond both is an overage (billable extra).
  */
 
 import { addMonths, addWeeks, differenceInCalendarDays } from "date-fns";
@@ -187,7 +187,12 @@ export function computeRetainer(
       // Expire lots that lapsed on/before this delivery date.
       totals.expired += dropExpired(lots, d.date);
       let qty = d.quantity;
-      // Soonest-expiring rollover first.
+      // This month's allotment first.
+      const takeFresh = Math.min(fresh, qty);
+      fresh -= takeFresh;
+      qty -= takeFresh;
+      usedFromFresh += takeFresh;
+      // Then rollover buffer (soonest-expiring first).
       lots.sort((a, b) => a.expiresAt.getTime() - b.expiresAt.getTime());
       for (const lot of lots) {
         if (qty <= 0) break;
@@ -197,11 +202,6 @@ export function computeRetainer(
         usedFromRollover += take;
       }
       lots = lots.filter((l) => l.remaining > 0);
-      // Then fresh allotment.
-      const takeFresh = Math.min(fresh, qty);
-      fresh -= takeFresh;
-      qty -= takeFresh;
-      usedFromFresh += takeFresh;
       // Remainder = overage.
       overage += qty;
     }
@@ -266,6 +266,12 @@ export function computeRetainer(
   for (const d of periodDeliveries(cStart, cEnd, asOf)) {
     totals.expired += dropExpired(lots, d.date);
     let qty = d.quantity;
+    // This month's allotment first.
+    const takeFresh = Math.min(fresh, qty);
+    fresh -= takeFresh;
+    qty -= takeFresh;
+    usedFromFresh += takeFresh;
+    // Then rollover buffer (soonest-expiring first).
     lots.sort((a, b) => a.expiresAt.getTime() - b.expiresAt.getTime());
     for (const lot of lots) {
       if (qty <= 0) break;
@@ -275,10 +281,6 @@ export function computeRetainer(
       usedFromRollover += take;
     }
     lots = lots.filter((l) => l.remaining > 0);
-    const takeFresh = Math.min(fresh, qty);
-    fresh -= takeFresh;
-    qty -= takeFresh;
-    usedFromFresh += takeFresh;
     overageThisPeriod += qty;
   }
 

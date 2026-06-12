@@ -49,8 +49,8 @@ export function ClientDetail({
       ) : (
         <>
           <div className="grid gap-6 lg:grid-cols-2">
-            <RolloverHero computation={computation} />
             <ThisMonthCard computation={computation} />
+            <RolloverHero computation={computation} />
           </div>
 
           <UtilizationTrend computation={computation} />

@@ -1,7 +1,8 @@
-import { logDelivery, updateDelivery, deleteDelivery } from "@/app/actions";
+import { logDelivery, updateDelivery } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { DeleteDeliveryButton } from "@/components/client/DeleteDeliveryButton";
 import { shortDate } from "@/lib/format";
 import { todaySGTString } from "@/lib/time";
 import type { VideoRow } from "@/lib/types";
@@ -67,14 +68,16 @@ export function DeliveriesLog({
                     <input type="text" name="title" defaultValue={v.title ?? ""} placeholder="Title / concept" className={inputCls} />
                     <NumberField name="quantity" min={1} defaultValue={v.quantity} className={inputCls} aria-label="Quantity" />
                     <input type="url" name="link" defaultValue={v.link ?? ""} placeholder="Link (optional)" className={`${inputCls} sm:col-span-3`} />
-                    <SubmitButton
-                      pendingLabel="Saving"
-                      className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover sm:col-span-3 sm:justify-self-start"
-                    >
-                      Save changes
-                    </SubmitButton>
+                    <div className="col-span-2 flex items-center justify-end gap-2 sm:col-span-3">
+                      <DeleteDeliveryButton videoId={v.id} clientId={clientId} />
+                      <SubmitButton
+                        pendingLabel="Saving"
+                        className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
+                      >
+                        Save changes
+                      </SubmitButton>
+                    </div>
                   </form>
-                  <DeleteButton videoId={v.id} clientId={clientId} />
                 </div>
               </details>
             )}
@@ -107,15 +110,5 @@ function Row({ v, editable = false }: { v: VideoRow; editable?: boolean }) {
         </span>
       )}
     </>
-  );
-}
-
-function DeleteButton({ videoId, clientId }: { videoId: string; clientId: string }) {
-  return (
-    <form action={deleteDelivery.bind(null, videoId, clientId)} className="mt-2">
-      <button type="submit" className="rounded-lg px-3 py-2 text-sm font-medium text-faint ring-1 ring-border transition hover:text-bad hover:ring-bad/50">
-        Delete delivery
-      </button>
-    </form>
   );
 }

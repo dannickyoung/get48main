@@ -33,16 +33,28 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
   eq("overage: 0 rolling", c.current.rollover.available, 0);
 }
 
-// 3) Rollover consumed first: month 0 unused (5 roll), month 1 deliver 2 → drawn from rollover.
+// 3) Allotment first: month 0 unused (5 roll), month 1 deliver 2 → counts against
+//    this month's allotment, rollover untouched.
 {
   const t = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, rolloverWeeks: 8 };
   const d: Delivery[] = [
     { id: "a", deliveredOn: "2026-02-05", quantity: 2 }, // in month 1
   ];
   const c = computeRetainer(t, d, new Date(2026, 1, 20)); // 20 Feb, month index 1
-  eq("consume-rollover-first: 2 used from rollover", c.current.usedFromRollover, 2);
-  eq("consume-rollover-first: 0 fresh used", c.current.usedFromFresh, 0);
-  eq("consume-rollover-first: 3 rollover left", c.current.rollover.available, 3);
+  eq("allotment-first: 2 used from allotment", c.current.usedFromFresh, 2);
+  eq("allotment-first: 0 from rollover", c.current.usedFromRollover, 0);
+  eq("allotment-first: rollover stays 5", c.current.rollover.available, 5);
+}
+
+// 3b) Over allotment dips into rollover: deliver 10 against 8/mo with 5 rollover.
+{
+  const t = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, rolloverWeeks: 8 };
+  const d: Delivery[] = [{ id: "a", deliveredOn: "2026-02-05", quantity: 10 }];
+  const c = computeRetainer(t, d, new Date(2026, 1, 20));
+  eq("over-allotment: 8 from allotment", c.current.usedFromFresh, 8);
+  eq("over-allotment: 2 from rollover", c.current.usedFromRollover, 2);
+  eq("over-allotment: 3 rollover left", c.current.rollover.available, 3);
+  eq("over-allotment: 0 overage (buffer covered it)", c.current.overageThisPeriod, 0);
 }
 
 // 4) Not started yet.

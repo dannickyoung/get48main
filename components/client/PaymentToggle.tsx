@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { setPayment } from "@/app/actions";
+import { toast } from "@/lib/toast";
 
 export function PaymentToggle({
   clientId,
@@ -24,9 +25,14 @@ export function PaymentToggle({
     <button
       disabled={pending}
       onClick={() =>
-        start(() =>
-          setPayment({ clientId, periodIndex, periodStart, kind, amount, paid: !paid }),
-        )
+        start(async () => {
+          try {
+            await setPayment({ clientId, periodIndex, periodStart, kind, amount, paid: !paid });
+            toast.success(!paid ? "Payment marked paid" : "Payment marked unpaid");
+          } catch {
+            toast.error("Couldn't update payment");
+          }
+        })
       }
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition disabled:opacity-50 ${
         paid ? "tint-accent" : "tint-muted hover:text-foreground"

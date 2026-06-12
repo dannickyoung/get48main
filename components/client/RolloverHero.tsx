@@ -14,7 +14,6 @@ export function RolloverHero({ computation }: { computation: RetainerComputation
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-faint">
           Rolling over now
         </h2>
-        <span className="text-xs text-faint">cap {terms.rolloverCap}</span>
       </div>
 
       <div className="mt-5 flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
