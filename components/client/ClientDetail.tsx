@@ -13,7 +13,7 @@ import type { ClientView } from "@/lib/retainer/assemble";
 export function ClientDetail({
   view,
   readOnly,
-  backHref = "/dashboard",
+  backHref = "/admin",
 }: {
   view: ClientView;
   readOnly: boolean;

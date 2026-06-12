@@ -76,7 +76,7 @@ export function PreviewSidebar() {
         <div className="text-[13px] font-medium text-foreground">Preview mode</div>
         <div className="mt-0.5 text-[11px] uppercase tracking-wider text-faint">Sample data</div>
         <Link
-          href="/login"
+          href="/"
           className="mt-3 block rounded-lg bg-background px-3 py-2 text-center text-xs font-semibold text-muted ring-1 ring-border transition hover:text-foreground hover:ring-border-strong"
         >
           Exit preview

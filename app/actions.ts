@@ -23,7 +23,7 @@ export async function setInitialPassword(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/login/admin");
 
   const password = str(formData, "password");
   const confirm = str(formData, "confirm");
@@ -37,7 +37,7 @@ export async function setInitialPassword(
   });
   if (error) return { error: error.message };
 
-  redirect("/dashboard");
+  redirect("/admin");
 }
 
 /** Change password from Settings (already-authenticated admin). */
@@ -50,7 +50,7 @@ export async function changePassword(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/login/admin");
 
   const password = str(formData, "password");
   const confirm = str(formData, "confirm");
@@ -115,7 +115,7 @@ export async function addClient(formData: FormData) {
     /* inviting is optional; client can self-request a link from /login */
   }
 
-  revalidatePath("/dashboard");
+  revalidatePath("/admin");
   redirect(`/clients/${client.id}`);
 }
 
@@ -158,7 +158,7 @@ export async function setArchived(clientId: string, archived: boolean) {
   await assertAdmin();
   const supabase = await createClient();
   await supabase.from("clients").update({ archived }).eq("id", clientId);
-  revalidatePath("/dashboard");
+  revalidatePath("/admin");
   revalidatePath(`/clients/${clientId}`);
 }
 
@@ -167,8 +167,8 @@ export async function deleteClient(clientId: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("clients").delete().eq("id", clientId);
   if (error) throw new Error(error.message);
-  revalidatePath("/dashboard");
-  redirect("/dashboard");
+  revalidatePath("/admin");
+  redirect("/admin");
 }
 
 // ---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ export async function logDelivery(clientId: string, formData: FormData) {
   });
   if (error) throw new Error(error.message);
   revalidatePath(`/clients/${clientId}`);
-  revalidatePath("/dashboard");
+  revalidatePath("/admin");
 }
 
 /** Log a delivery from the cross-client Deliveries page (client picked in the form). */
@@ -212,7 +212,7 @@ export async function updateDelivery(videoId: string, clientId: string, formData
   if (error) throw new Error(error.message);
   revalidatePath(`/clients/${clientId}`);
   revalidatePath("/deliveries");
-  revalidatePath("/dashboard");
+  revalidatePath("/admin");
 }
 
 export async function deleteDelivery(videoId: string, clientId: string) {
@@ -221,7 +221,7 @@ export async function deleteDelivery(videoId: string, clientId: string) {
   await supabase.from("videos").delete().eq("id", videoId);
   revalidatePath(`/clients/${clientId}`);
   revalidatePath("/deliveries");
-  revalidatePath("/dashboard");
+  revalidatePath("/admin");
 }
 
 // ---------------------------------------------------------------------------
@@ -254,5 +254,5 @@ export async function setPayment(input: {
     );
   if (error) throw new Error(error.message);
   revalidatePath(`/clients/${input.clientId}`);
-  revalidatePath("/dashboard");
+  revalidatePath("/admin");
 }

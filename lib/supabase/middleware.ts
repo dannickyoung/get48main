@@ -39,7 +39,8 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublic) {
     const to = request.nextUrl.clone();
-    to.pathname = "/login";
+    // Client area → client login; everything else → admin login.
+    to.pathname = path.startsWith("/me") ? "/login/client" : "/login/admin";
     return NextResponse.redirect(to);
   }
 
@@ -55,10 +56,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(to);
   }
 
-  // Already signed in and hitting the login screen → send to the app.
-  if (user && path === "/login") {
+  // Already signed in and hitting a login screen → send to the app
+  // (requireAdmin/requireClient route to the right area by role).
+  if (user && path.startsWith("/login")) {
     const to = request.nextUrl.clone();
-    to.pathname = "/dashboard";
+    to.pathname = "/admin";
     return NextResponse.redirect(to);
   }
 

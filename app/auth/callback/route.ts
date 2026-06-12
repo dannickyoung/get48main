@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
-    if (profile?.role === "admin") dest = "/dashboard";
+    if (profile?.role === "admin") dest = "/admin";
     else if (profile?.role === "client") dest = "/me";
   }
 

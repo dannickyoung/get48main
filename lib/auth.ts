@@ -22,7 +22,7 @@ export async function getProfile(): Promise<Profile | null> {
 /** Require an admin session; redirect otherwise. Returns the profile. */
 export async function requireAdmin(): Promise<Profile> {
   const profile = await getProfile();
-  if (!profile) redirect("/login");
+  if (!profile) redirect("/login/admin");
   if (profile.role !== "admin") redirect(profile.role === "client" ? "/me" : "/no-access");
   return profile;
 }
@@ -30,8 +30,8 @@ export async function requireAdmin(): Promise<Profile> {
 /** Require a client session; redirect otherwise. Returns the profile. */
 export async function requireClient(): Promise<Profile> {
   const profile = await getProfile();
-  if (!profile) redirect("/login");
-  if (profile.role === "admin") redirect("/dashboard");
+  if (!profile) redirect("/login/client");
+  if (profile.role === "admin") redirect("/admin");
   if (profile.role !== "client" || !profile.client_id) redirect("/no-access");
   return profile;
 }

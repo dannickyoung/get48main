@@ -95,7 +95,7 @@ export default function NewClientPage() {
         </div>
 
         <div className="flex justify-end gap-3">
-          <Link href="/dashboard" className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-border transition hover:text-foreground">
+          <Link href="/admin" className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-border transition hover:text-foreground">
             Cancel
           </Link>
           <button
