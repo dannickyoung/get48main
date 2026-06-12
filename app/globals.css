@@ -1,26 +1,183 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================================
+   get48 — design tokens
+   Dark "control-room" surface, neutrals tinted toward the lime brand hue,
+   lime used only as a scalpel-sharp 10% accent. Generous rounded corners.
+   ============================================================================ */
+
+@theme {
+  /* Brand hue ≈ 128 (lime). Neutrals carry a whisper of it for cohesion. */
+  --color-background: oklch(0.168 0.012 150);
+  --color-surface: oklch(0.205 0.013 150);
+  --color-surface-2: oklch(0.243 0.014 150);
+  --color-surface-3: oklch(0.285 0.014 150);
+  --color-border: oklch(0.30 0.012 150);
+  --color-border-strong: oklch(0.40 0.016 150);
+
+  --color-foreground: oklch(0.965 0.008 150);
+  --color-muted: oklch(0.74 0.012 150);
+  --color-faint: oklch(0.58 0.012 150);
+
+  --color-accent: oklch(0.87 0.205 128);
+  --color-accent-hover: oklch(0.92 0.19 128);
+  --color-accent-dim: oklch(0.42 0.10 132);
+  --color-on-accent: oklch(0.22 0.05 150);
+
+  --color-good: oklch(0.87 0.205 128);
+  --color-warn: oklch(0.83 0.155 78);
+  --color-bad: oklch(0.69 0.19 27);
+
+  /* Rounded, consistent — restrained, not pill-soft. */
+  --radius-sm: 0.3125rem;
+  --radius-md: 0.4375rem;
+  --radius-lg: 0.5625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 0.9375rem;
+
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-hanken), sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Render native controls (date picker, number steppers, scrollbars) dark. */
+    color-scheme: dark;
+  }
+
+  /* Calendar picker indicator — tinted to match, brightens on hover. */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  input[type="date"]:hover::-webkit-calendar-picker-indicator,
+  input[type="date"]:focus::-webkit-calendar-picker-indicator {
+    opacity: 0.9;
+  }
+
+  /* Number steppers sit flush and inherit the dark scheme. */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    opacity: 0.6;
+    height: 1.6rem;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* A single faint lime aura, top-centre — atmosphere without glow-spam. */
+    background-image: radial-gradient(
+      120% 80% at 50% -20%,
+      oklch(0.3 0.08 132 / 0.5),
+      transparent 60%
+    );
+    background-attachment: fixed;
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    background: oklch(0.87 0.205 128 / 0.28);
+    color: var(--color-foreground);
+  }
+
+  /* Tabular figures everywhere numbers live — money & counts must align. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "cv11";
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-surface-3);
+    border: 3px solid var(--color-background);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-strong);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Reusable lime tint surface (status pills, soft highlights). */
+  .tint-accent {
+    background: color-mix(in oklch, var(--color-accent) 14%, transparent);
+    color: var(--color-accent-hover);
+  }
+  .tint-warn {
+    background: color-mix(in oklch, var(--color-warn) 16%, transparent);
+    color: var(--color-warn);
+  }
+  .tint-bad {
+    background: color-mix(in oklch, var(--color-bad) 18%, transparent);
+    color: oklch(0.82 0.13 27);
+  }
+  .tint-muted {
+    background: color-mix(in oklch, var(--color-foreground) 8%, transparent);
+    color: var(--color-muted);
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .rise {
+    animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes dot-pulse {
+    0%,
+    80%,
+    100% {
+      opacity: 0.3;
+      transform: scale(0.7);
+    }
+    40% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .loading-dot {
+    animation: dot-pulse 1s ease-in-out infinite both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise {
+      animation: none;
+    }
+    .loading-dot {
+      animation: none;
+      opacity: 0.6;
+    }
+    * {
+      scroll-behavior: auto !important;
+    }
+  }
 }

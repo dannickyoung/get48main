@@ -1,0 +1,94 @@
+import { updateRetainer } from "@/app/actions";
+import { money, shortDate } from "@/lib/format";
+import type { Retainer } from "@/lib/types";
+
+const inputCls =
+  "w-full rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:ring-2 focus:ring-accent";
+const labelCls = "text-xs font-semibold uppercase tracking-wider text-faint";
+
+export function RetainerTermsCard({
+  retainer,
+  readOnly,
+}: {
+  retainer: Retainer;
+  readOnly: boolean;
+}) {
+  return (
+    <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
+      <h2 className="font-display text-lg font-semibold tracking-tight">Retainer terms</h2>
+
+      <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4">
+        <Term label="Start date" value={shortDate(retainer.start_date)} />
+        <Term label="Videos / month" value={retainer.videos_per_month} />
+        <Term label="Monthly price" value={money(retainer.monthly_price)} />
+        <Term label="Overage rate" value={retainer.overage_rate ? `${money(retainer.overage_rate)} / video` : "—"} />
+        <Term label="Rollover cap" value={`${retainer.rollover_cap} videos`} />
+        <Term label="Rollover window" value={`${retainer.rollover_weeks} weeks`} />
+      </dl>
+
+      {!readOnly && (
+        <details className="group mt-6">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover">
+            <span className="transition group-open:rotate-45">+</span> Edit terms
+          </summary>
+          <form
+            action={updateRetainer.bind(null, retainer.client_id)}
+            className="mt-4 grid grid-cols-2 gap-4 rounded-xl bg-surface-2 p-4"
+          >
+            <Field label="Start date">
+              <input type="date" name="start_date" defaultValue={retainer.start_date} className={inputCls} />
+            </Field>
+            <Field label="Videos / month">
+              <input type="number" name="videos_per_month" min={1} defaultValue={retainer.videos_per_month} className={inputCls} />
+            </Field>
+            <Field label="Monthly price">
+              <input type="number" name="monthly_price" min={0} step="0.01" defaultValue={retainer.monthly_price} className={inputCls} />
+            </Field>
+            <Field label="Overage rate / video">
+              <input type="number" name="overage_rate" min={0} step="0.01" defaultValue={retainer.overage_rate} className={inputCls} />
+            </Field>
+            <Field label="Rollover cap">
+              <input type="number" name="rollover_cap" min={0} defaultValue={retainer.rollover_cap} className={inputCls} />
+            </Field>
+            <Field label="Rollover weeks">
+              <input type="number" name="rollover_weeks" min={1} defaultValue={retainer.rollover_weeks} className={inputCls} />
+            </Field>
+            <Field label="Status">
+              <select name="status" defaultValue={retainer.status} className={inputCls}>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="ended">Ended</option>
+              </select>
+            </Field>
+            <div className="col-span-2 flex justify-end">
+              <button
+                type="submit"
+                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
+              >
+                Save terms
+              </button>
+            </div>
+          </form>
+        </details>
+      )}
+    </section>
+  );
+}
+
+function Term({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <dt className={labelCls}>{label}</dt>
+      <dd className="mt-1 font-display text-lg font-semibold tnum text-foreground">{value}</dd>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className={labelCls}>{label}</span>
+      <div className="mt-1.5">{children}</div>
+    </label>
+  );
+}
