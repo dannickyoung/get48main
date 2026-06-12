@@ -49,7 +49,7 @@ export default function ClientLoginPage() {
       setCode("");
     } else {
       toast.success("Signed in");
-      router.push("/");
+      router.push("/me");
       router.refresh();
     }
   }
