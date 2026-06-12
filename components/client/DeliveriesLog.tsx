@@ -1,4 +1,6 @@
 import { logDelivery, updateDelivery, deleteDelivery } from "@/app/actions";
+import { DateField } from "@/components/ui/DateField";
+import { NumberField } from "@/components/ui/NumberField";
 import { shortDate } from "@/lib/format";
 import type { VideoRow } from "@/lib/types";
 
@@ -26,11 +28,11 @@ export function DeliveriesLog({
       {!readOnly && (
         <form
           action={logDelivery.bind(null, clientId)}
-          className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-surface-2 p-4 sm:grid-cols-[auto_1fr_auto_auto]"
+          className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-surface-2 p-4 sm:grid-cols-[150px_1fr_96px_auto]"
         >
-          <input type="date" name="delivered_on" defaultValue={today} required className={inputCls} />
+          <DateField name="delivered_on" defaultValue={today} required className={inputCls} />
           <input type="text" name="title" placeholder="Title / concept (optional)" className={inputCls} />
-          <input type="number" name="quantity" min={1} defaultValue={1} className={`${inputCls} w-20`} aria-label="Quantity" />
+          <NumberField name="quantity" min={1} defaultValue={1} className={inputCls} aria-label="Quantity" />
           <button type="submit" className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
             Log
           </button>
@@ -46,7 +48,9 @@ export function DeliveriesLog({
         {videos.map((v) => (
           <li key={v.id}>
             {readOnly ? (
-              <Row v={v} />
+              <div className="flex items-center gap-4 py-3">
+                <Row v={v} />
+              </div>
             ) : (
               <details className="group">
                 <summary className="flex cursor-pointer list-none items-center gap-4 py-3">
@@ -55,11 +59,11 @@ export function DeliveriesLog({
                 <div className="pb-4">
                   <form
                     action={updateDelivery.bind(null, v.id, clientId)}
-                    className="grid grid-cols-2 gap-3 sm:grid-cols-[auto_1fr_auto]"
+                    className="grid grid-cols-2 gap-3 sm:grid-cols-[150px_1fr_96px]"
                   >
-                    <input type="date" name="delivered_on" defaultValue={v.delivered_on} className={inputCls} />
+                    <DateField name="delivered_on" defaultValue={v.delivered_on} className={inputCls} />
                     <input type="text" name="title" defaultValue={v.title ?? ""} placeholder="Title / concept" className={inputCls} />
-                    <input type="number" name="quantity" min={1} defaultValue={v.quantity} className={`${inputCls} w-20`} aria-label="Quantity" />
+                    <NumberField name="quantity" min={1} defaultValue={v.quantity} className={inputCls} aria-label="Quantity" />
                     <input type="url" name="link" defaultValue={v.link ?? ""} placeholder="Link (optional)" className={`${inputCls} sm:col-span-3`} />
                     <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover sm:col-span-3 sm:justify-self-start">
                       Save changes

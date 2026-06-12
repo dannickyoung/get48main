@@ -1,4 +1,6 @@
 import { updateRetainer } from "@/app/actions";
+import { DateField } from "@/components/ui/DateField";
+import { NumberField } from "@/components/ui/NumberField";
 import { money, shortDate } from "@/lib/format";
 import type { Retainer } from "@/lib/types";
 
@@ -36,22 +38,22 @@ export function RetainerTermsCard({
             className="mt-4 grid grid-cols-2 gap-4 rounded-xl bg-surface-2 p-4"
           >
             <Field label="Start date">
-              <input type="date" name="start_date" defaultValue={retainer.start_date} className={inputCls} />
+              <DateField name="start_date" defaultValue={retainer.start_date} className={inputCls} />
             </Field>
             <Field label="Videos / month">
-              <input type="number" name="videos_per_month" min={1} defaultValue={retainer.videos_per_month} className={inputCls} />
+              <NumberField name="videos_per_month" min={1} defaultValue={retainer.videos_per_month} className={inputCls} />
             </Field>
             <Field label="Monthly price">
-              <input type="number" name="monthly_price" min={0} step="0.01" defaultValue={retainer.monthly_price} className={inputCls} />
+              <NumberField name="monthly_price" min={0} step={50} defaultValue={retainer.monthly_price} className={inputCls} />
             </Field>
             <Field label="Overage rate / video">
-              <input type="number" name="overage_rate" min={0} step="0.01" defaultValue={retainer.overage_rate} className={inputCls} />
+              <NumberField name="overage_rate" min={0} step={25} defaultValue={retainer.overage_rate} className={inputCls} />
             </Field>
             <Field label="Rollover cap">
-              <input type="number" name="rollover_cap" min={0} defaultValue={retainer.rollover_cap} className={inputCls} />
+              <NumberField name="rollover_cap" min={0} defaultValue={retainer.rollover_cap} className={inputCls} />
             </Field>
             <Field label="Rollover weeks">
-              <input type="number" name="rollover_weeks" min={1} defaultValue={retainer.rollover_weeks} className={inputCls} />
+              <NumberField name="rollover_weeks" min={1} defaultValue={retainer.rollover_weeks} className={inputCls} />
             </Field>
             <Field label="Status">
               <select name="status" defaultValue={retainer.status} className={inputCls}>

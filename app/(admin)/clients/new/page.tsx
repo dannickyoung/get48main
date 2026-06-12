@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { addClient } from "@/app/actions";
+import { DateField } from "@/components/ui/DateField";
+import { NumberField } from "@/components/ui/NumberField";
 
 const inputCls =
   "w-full rounded-lg bg-background px-3.5 py-2.5 text-sm text-foreground ring-1 ring-border transition placeholder:text-faint focus:ring-2 focus:ring-accent";
@@ -50,27 +52,39 @@ export default function NewClientPage() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <label className="block">
               <span className={labelCls}>Start date *</span>
-              <input name="start_date" type="date" required defaultValue={today} className={`mt-1.5 ${inputCls}`} />
+              <div className="mt-1.5">
+                <DateField name="start_date" required defaultValue={today} className={inputCls} />
+              </div>
             </label>
             <label className="block">
               <span className={labelCls}>Videos / month *</span>
-              <input name="videos_per_month" type="number" min={1} required defaultValue={4} className={`mt-1.5 ${inputCls}`} />
+              <div className="mt-1.5">
+                <NumberField name="videos_per_month" min={1} required defaultValue={4} className={inputCls} />
+              </div>
             </label>
             <label className="block">
               <span className={labelCls}>Monthly price</span>
-              <input name="monthly_price" type="number" min={0} step="0.01" defaultValue={0} className={`mt-1.5 ${inputCls}`} />
+              <div className="mt-1.5">
+                <NumberField name="monthly_price" min={0} step={50} defaultValue={0} className={inputCls} />
+              </div>
             </label>
             <label className="block">
               <span className={labelCls}>Overage / video</span>
-              <input name="overage_rate" type="number" min={0} step="0.01" defaultValue={0} className={`mt-1.5 ${inputCls}`} />
+              <div className="mt-1.5">
+                <NumberField name="overage_rate" min={0} step={25} defaultValue={0} className={inputCls} />
+              </div>
             </label>
             <label className="block">
               <span className={labelCls}>Rollover cap</span>
-              <input name="rollover_cap" type="number" min={0} defaultValue={5} className={`mt-1.5 ${inputCls}`} />
+              <div className="mt-1.5">
+                <NumberField name="rollover_cap" min={0} defaultValue={5} className={inputCls} />
+              </div>
             </label>
             <label className="block">
               <span className={labelCls}>Rollover weeks</span>
-              <input name="rollover_weeks" type="number" min={1} defaultValue={8} className={`mt-1.5 ${inputCls}`} />
+              <div className="mt-1.5">
+                <NumberField name="rollover_weeks" min={1} defaultValue={8} className={inputCls} />
+              </div>
             </label>
           </div>
           <p className="mt-4 text-xs leading-relaxed text-faint">

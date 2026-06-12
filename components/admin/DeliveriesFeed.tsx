@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { logDeliveryQuick } from "@/app/actions";
+import { DateField } from "@/components/ui/DateField";
+import { NumberField } from "@/components/ui/NumberField";
 import { shortDate } from "@/lib/format";
 import type { DeliveryWithClient } from "@/lib/aggregate";
 
@@ -20,7 +22,7 @@ export function DeliveriesFeed({
       {clients.length > 0 && (
         <form
           action={logDeliveryQuick}
-          className="grid grid-cols-2 gap-3 rounded-2xl bg-surface p-5 ring-1 ring-border sm:grid-cols-[1.2fr_auto_1.6fr_auto_auto] sm:p-6"
+          className="grid grid-cols-2 gap-3 rounded-2xl bg-surface p-5 ring-1 ring-border sm:grid-cols-[1.2fr_150px_1.6fr_96px_auto] sm:p-6"
         >
           <select name="client_id" required defaultValue="" className={inputCls} aria-label="Client">
             <option value="" disabled>
@@ -32,9 +34,9 @@ export function DeliveriesFeed({
               </option>
             ))}
           </select>
-          <input type="date" name="delivered_on" defaultValue={today} required className={inputCls} />
+          <DateField name="delivered_on" defaultValue={today} required className={inputCls} />
           <input type="text" name="title" placeholder="Title / concept (optional)" className={inputCls} />
-          <input type="number" name="quantity" min={1} defaultValue={1} className={`${inputCls} w-20`} aria-label="Quantity" />
+          <NumberField name="quantity" min={1} defaultValue={1} className={inputCls} aria-label="Quantity" />
           <button type="submit" className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
             Log delivery
           </button>

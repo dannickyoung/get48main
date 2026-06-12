@@ -121,6 +121,18 @@
 }
 
 @layer utilities {
+  /* Hide native number spinners (we render custom steppers). */
+  .no-spin {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+  .no-spin::-webkit-inner-spin-button,
+  .no-spin::-webkit-outer-spin-button {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
   /* Reusable lime tint surface (status pills, soft highlights). */
   .tint-accent {
     background: color-mix(in oklch, var(--color-accent) 14%, transparent);
