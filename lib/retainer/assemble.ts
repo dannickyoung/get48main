@@ -61,12 +61,14 @@ export function assembleClient(
     title: v.title,
   }));
 
-  // Per-month overrides for allotment (engine) and price (payments).
+  // Per-month overrides for allotment (engine), price + overage rate (payments).
   const videoOverrides: Record<number, number> = {};
   const priceOverrides: Record<number, number> = {};
+  const overageRateOverrides: Record<number, number> = {};
   for (const m of months) {
     if (m.videos_per_month != null) videoOverrides[m.period_index] = m.videos_per_month;
     if (m.monthly_price != null) priceOverrides[m.period_index] = Number(m.monthly_price);
+    if (m.overage_rate != null) overageRateOverrides[m.period_index] = Number(m.overage_rate);
   }
 
   const computation = computeRetainer(
@@ -88,7 +90,15 @@ export function assembleClient(
     overageByPeriod[computation.current.periodIndex] = computation.current.overageThisPeriod;
   }
 
-  const schedule = buildPaymentSchedule(retainer, payments, computation, asOf, priceOverrides, overageByPeriod);
+  const schedule = buildPaymentSchedule(
+    retainer,
+    payments,
+    computation,
+    asOf,
+    priceOverrides,
+    overageByPeriod,
+    overageRateOverrides,
+  );
   const outstanding = schedule.filter((p) => p.status === "pending").reduce((s, p) => s + p.amount, 0);
 
   return {
@@ -110,9 +120,9 @@ function buildPaymentSchedule(
   asOf: Date,
   priceOverrides: Record<number, number> = {},
   overageByPeriod: Record<number, number> = {},
+  overageRateOverrides: Record<number, number> = {},
 ): ScheduledPayment[] {
   const start = parseDateOnly(retainer.start_date);
-  const overageRate = Number(retainer.overage_rate) || 0;
   const lastIndex = computation.current.state === "active" ? computation.current.periodIndex : -1;
 
   const stored = new Map<string, Payment>();
@@ -124,6 +134,7 @@ function buildPaymentSchedule(
     const periodEnd = addMonths(start, k + 1);
     const half = (priceOverrides[k] ?? Number(retainer.monthly_price)) / 2;
     const overageCount = overageByPeriod[k] ?? 0;
+    const overageRate = (overageRateOverrides[k] ?? Number(retainer.overage_rate)) || 0;
     const overageCharge = overageCount * overageRate;
     for (const kind of ["deposit", "balance"] as PaymentKind[]) {
       const dueDate = kind === "deposit" ? periodStart : periodEnd;

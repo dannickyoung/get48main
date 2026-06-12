@@ -54,6 +54,7 @@ export type RetainerMonth = {
   period_index: number;
   videos_per_month: number | null;
   monthly_price: number | null;
+  overage_rate: number | null;
   created_at: string;
 };
 

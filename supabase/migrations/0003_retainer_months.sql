@@ -12,9 +12,12 @@ create table if not exists public.retainer_months (
   period_index  integer not null,                 -- 0-based billing month
   videos_per_month integer,                        -- null → use retainer default
   monthly_price numeric(10,2),                      -- null → use retainer default
+  overage_rate  numeric(10,2),                      -- null → use retainer default
   created_at    timestamptz not null default now(),
   unique (client_id, period_index)
 );
+-- If the table already existed without overage_rate, add it.
+alter table public.retainer_months add column if not exists overage_rate numeric(10,2);
 create index if not exists retainer_months_client_idx on public.retainer_months(client_id);
 
 alter table public.retainer_months enable row level security;

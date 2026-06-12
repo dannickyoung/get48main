@@ -32,6 +32,7 @@ export function MonthlyTermsCard({
       label: monthLabel(addMonths(start, k)),
       videos: o?.videos_per_month ?? null,
       price: o?.monthly_price != null ? Number(o.monthly_price) : null,
+      overageRate: o?.overage_rate != null ? Number(o.overage_rate) : null,
     });
   }
 
@@ -71,7 +72,7 @@ export function MonthlyTermsCard({
                 <ActionForm
                   action={setMonthTerms.bind(null, retainer.client_id, r.k)}
                   success={`${r.label} terms updated`}
-                  className="grid grid-cols-2 gap-3 pb-4 sm:grid-cols-[1fr_1fr_auto]"
+                  className="grid grid-cols-2 gap-3 pb-4 sm:grid-cols-[1fr_1fr_1fr_auto]"
                 >
                   <label className="block">
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-faint">Videos / month</span>
@@ -94,6 +95,19 @@ export function MonthlyTermsCard({
                         step={50}
                         defaultValue={r.price ?? undefined}
                         placeholder={`${retainer.monthly_price} (default)`}
+                        className={inputCls}
+                      />
+                    </div>
+                  </label>
+                  <label className="block">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-faint">Overage / video</span>
+                    <div className="mt-1.5">
+                      <NumberField
+                        name="overage_rate"
+                        min={0}
+                        step={25}
+                        defaultValue={r.overageRate ?? undefined}
+                        placeholder={`${retainer.overage_rate} (default)`}
                         className={inputCls}
                       />
                     </div>

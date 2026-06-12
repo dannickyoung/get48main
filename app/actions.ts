@@ -38,7 +38,7 @@ export async function setInitialPassword(
   });
   if (error) return { error: error.message };
 
-  redirect("/admin");
+  redirect(`/admin?toast=${encodeURIComponent("Password set")}`);
 }
 
 /** Change password from Settings (already-authenticated admin). */
@@ -117,7 +117,7 @@ export async function addClient(formData: FormData) {
   }
 
   revalidatePath("/admin");
-  redirect(`/clients/${client.id}`);
+  redirect(`/clients/${client.id}?toast=${encodeURIComponent("Client created")}`);
 }
 
 export async function updateClient(clientId: string, formData: FormData) {
@@ -142,16 +142,18 @@ export async function setMonthTerms(clientId: string, periodIndex: number, formD
   const supabase = await createClient();
   const vRaw = str(formData, "videos_per_month");
   const pRaw = str(formData, "monthly_price");
+  const oRaw = str(formData, "overage_rate");
   const videos_per_month = vRaw === "" ? null : Math.max(0, Number(vRaw));
   const monthly_price = pRaw === "" ? null : Math.max(0, Number(pRaw));
+  const overage_rate = oRaw === "" ? null : Math.max(0, Number(oRaw));
 
-  if (videos_per_month === null && monthly_price === null) {
+  if (videos_per_month === null && monthly_price === null && overage_rate === null) {
     await supabase.from("retainer_months").delete().eq("client_id", clientId).eq("period_index", periodIndex);
   } else {
     const { error } = await supabase
       .from("retainer_months")
       .upsert(
-        { client_id: clientId, period_index: periodIndex, videos_per_month, monthly_price },
+        { client_id: clientId, period_index: periodIndex, videos_per_month, monthly_price, overage_rate },
         { onConflict: "client_id,period_index" },
       );
     if (error) throw new Error(error.message);
@@ -193,7 +195,7 @@ export async function deleteClient(clientId: string) {
   const { error } = await supabase.from("clients").delete().eq("id", clientId);
   if (error) throw new Error(error.message);
   revalidatePath("/admin");
-  redirect("/admin");
+  redirect(`/admin?toast=${encodeURIComponent("Client deleted")}`);
 }
 
 // ---------------------------------------------------------------------------

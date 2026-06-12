@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/Toaster";
+import { FlashToast } from "@/components/ui/FlashToast";
 
 const display = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -28,6 +30,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster />
+        <Suspense>
+          <FlashToast />
+        </Suspense>
       </body>
     </html>
   );
