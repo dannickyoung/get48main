@@ -7,8 +7,10 @@ import { shortDate, relativeDays } from "@/lib/format";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Email when rollover videos are within this many days of expiring.
-const THRESHOLD_DAYS = 10;
+// Send a reminder only at these exact day-marks before expiry (not daily).
+// The job runs daily but only emails when a client's soonest rollover batch is
+// exactly 7 or 3 days from expiring.
+const REMINDER_DAYS = [7, 3];
 
 /**
  * Daily cron: emails the admin a digest of clients whose rolled-over videos are
@@ -27,7 +29,7 @@ export async function GET(request: Request) {
 
   const views = await getAllClientViewsAdmin();
   const soon = allRollovers(views).filter(
-    (r) => r.available > 0 && r.days != null && r.days <= THRESHOLD_DAYS,
+    (r) => r.available > 0 && r.days != null && REMINDER_DAYS.includes(r.days),
   );
 
   const payload = soon.map((r) => ({
@@ -62,7 +64,7 @@ export async function GET(request: Request) {
 
   const html = emailLayout(
     `${soon.length} client${soon.length === 1 ? "" : "s"} with rollover expiring soon`,
-    `<p style="margin:0 0 16px;">These rolled-over videos expire within ${THRESHOLD_DAYS} days — they'll be lost with no refund if unused.</p>
+    `<p style="margin:0 0 16px;">These rolled-over videos are expiring soon — they'll be lost with no refund if unused.</p>
      <table style="width:100%;border-collapse:collapse;font-size:14px;">
        <tr style="border-bottom:1px solid #3a4233;">
          <th style="text-align:left;color:#7d8a6e;font-size:11px;text-transform:uppercase;padding-bottom:8px;">Client</th>
