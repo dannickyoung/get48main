@@ -6,12 +6,14 @@ export function UtilizationTrend({ computation }: { computation: RetainerComputa
   const rows = [
     ...computation.periods.map((p) => ({
       label: format(p.start, "MMM"),
-      used: Math.min(p.totalUsed, p.allotment),
+      used: p.usedFromFresh,
+      rollover: p.usedFromRollover,
       over: p.overage,
     })),
     {
       label: format(computation.current.periodStart, "MMM"),
-      used: Math.min(computation.current.totalUsedThisPeriod, computation.current.allotment),
+      used: computation.current.usedFromFresh,
+      rollover: computation.current.usedFromRollover,
       over: computation.current.overageThisPeriod,
     },
   ].slice(-12);
@@ -29,14 +31,16 @@ export function UtilizationTrend({ computation }: { computation: RetainerComputa
           xKey="label"
           height={220}
           series={[
-            { key: "used", label: "Delivered", color: "var(--color-accent)" },
+            { key: "used", label: "From allotment", color: "var(--color-accent)" },
+            { key: "rollover", label: "From rollover", color: "var(--color-accent-dim)" },
             { key: "over", label: "Overage", color: "var(--color-warn)" },
           ]}
         />
       </div>
 
       <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[11px] text-faint">
-        <Legend swatch="var(--color-accent)" label="Delivered" />
+        <Legend swatch="var(--color-accent)" label="From allotment" />
+        <Legend swatch="var(--color-accent-dim)" label="From rollover" />
         <Legend swatch="var(--color-warn)" label="Overage" />
       </div>
     </section>

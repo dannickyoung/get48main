@@ -1,33 +1,55 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "iconoir-react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/brand/Logo";
 import { LoadingDots } from "@/components/ui/LoadingDots";
 import { toast } from "@/lib/toast";
 
 export default function ClientLoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [status, setStatus] = useState<"idle" | "sending" | "verifying" | "error">("idle");
   const [message, setMessage] = useState("");
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function sendCode(e?: React.FormEvent) {
+    e?.preventDefault();
     setStatus("sending");
     setMessage("");
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { shouldCreateUser: true },
     });
     if (error) {
       setStatus("error");
       setMessage(error.message);
-      toast.error(error.message || "Couldn't send link");
+      toast.error(error.message || "Couldn't send code");
     } else {
-      setStatus("sent");
-      toast.success("Sign-in link sent");
+      setStep("code");
+      setStatus("idle");
+      setCode("");
+      toast.success("Code sent — check your email");
+    }
+  }
+
+  async function verify(codeStr: string) {
+    setStatus("verifying");
+    setMessage("");
+    const supabase = createClient();
+    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: codeStr, type: "email" });
+    if (error) {
+      setStatus("error");
+      setMessage("That code is invalid or expired.");
+      toast.error("Invalid or expired code");
+      setCode("");
+    } else {
+      toast.success("Signed in");
+      router.push("/");
+      router.refresh();
     }
   }
 
@@ -39,30 +61,15 @@ export default function ClientLoginPage() {
           <div>
             <h1 className="font-display text-3xl font-semibold tracking-tight">Client sign in</h1>
             <p className="mt-2 text-[15px] leading-relaxed text-muted">
-              View your retainer, deliveries and payments.
+              {step === "email"
+                ? "View your retainer, deliveries and payments."
+                : `Enter the 6-digit code we emailed to ${email}.`}
             </p>
           </div>
         </div>
 
-        {status === "sent" ? (
-          <div className="rounded-xl bg-surface p-6 ring-1 ring-border">
-            <div className="grid h-11 w-11 place-items-center rounded-full tint-accent">
-              <Check width={22} height={22} strokeWidth={2} />
-            </div>
-            <h2 className="mt-4 font-display text-lg font-semibold">Check your inbox</h2>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">
-              We sent a one-time sign-in link to <span className="text-foreground">{email}</span>. Open it on
-              this device to view your account.
-            </p>
-            <button
-              onClick={() => setStatus("idle")}
-              className="mt-5 text-sm font-medium text-accent hover:text-accent-hover"
-            >
-              Use a different email
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit} className="rounded-xl bg-surface p-6 ring-1 ring-border">
+        {step === "email" ? (
+          <form onSubmit={sendCode} className="rounded-xl bg-surface p-6 ring-1 ring-border">
             <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-faint">
               Email address
             </label>
@@ -82,13 +89,54 @@ export default function ClientLoginPage() {
               disabled={status === "sending"}
               className="mt-4 w-full rounded-lg bg-accent px-4 py-3 text-[15px] font-semibold text-on-accent transition hover:bg-accent-hover disabled:opacity-60"
             >
-              {status === "sending" ? <LoadingDots label="Sending link" /> : "Email me a sign-in link"}
+              {status === "sending" ? <LoadingDots label="Sending code" /> : "Email me a code"}
             </button>
-            {status === "error" && <p className="mt-3 text-sm text-bad">{message}</p>}
             <p className="mt-4 text-xs leading-relaxed text-faint">
-              No password needed. We&apos;ll email you a secure one-time link to view your retainer.
+              No password needed. We&apos;ll email you a 6-digit code to sign in.
             </p>
           </form>
+        ) : (
+          <div className="rounded-xl bg-surface p-6 ring-1 ring-border">
+            <label htmlFor="code" className="text-xs font-semibold uppercase tracking-wider text-faint">
+              6-digit code
+            </label>
+            <input
+              id="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
+              maxLength={6}
+              value={code}
+              disabled={status === "verifying"}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                setCode(v);
+                setStatus("idle");
+                if (v.length === 6) verify(v);
+              }}
+              placeholder="••••••"
+              className="mt-2 w-full rounded-lg bg-background px-4 py-3 text-center font-display text-2xl font-semibold tracking-[0.4em] text-foreground ring-1 ring-border transition placeholder:tracking-[0.4em] placeholder:text-faint focus:ring-2 focus:ring-accent disabled:opacity-60"
+            />
+
+            <button
+              type="button"
+              onClick={() => code.length === 6 && verify(code)}
+              disabled={status === "verifying" || code.length !== 6}
+              className="mt-4 w-full rounded-lg bg-accent px-4 py-3 text-[15px] font-semibold text-on-accent transition hover:bg-accent-hover disabled:opacity-50"
+            >
+              {status === "verifying" ? <LoadingDots label="Verifying" /> : "Verify & sign in"}
+            </button>
+            {status === "error" && <p className="mt-3 text-sm text-bad">{message}</p>}
+
+            <div className="mt-4 flex items-center justify-between border-t border-border pt-4 text-sm">
+              <button onClick={() => { setStep("email"); setStatus("idle"); }} className="font-medium text-faint transition hover:text-foreground">
+                Change email
+              </button>
+              <button onClick={() => sendCode()} disabled={status === "sending"} className="font-medium text-accent transition hover:text-accent-hover disabled:opacity-50">
+                {status === "sending" ? "Sending…" : "Resend code"}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </main>
