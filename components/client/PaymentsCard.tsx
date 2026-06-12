@@ -82,6 +82,11 @@ export function PaymentsCard({
                       <div className="text-xs text-faint tnum">
                         {p.status === "paid" && p.paidOn ? `paid ${shortDate(p.paidOn)}` : `due ${shortDate(p.dueDate)}`}
                       </div>
+                      {p.overageCount > 0 && p.overageCharge > 0 && (
+                        <div className="mt-1 text-xs font-medium text-warn tnum">
+                          incl. {p.overageCount} overage · {money(p.overageCharge)}
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>

@@ -17,6 +17,9 @@ export type ScheduledPayment = {
   status: "pending" | "paid";
   paidOn: string | null;
   overdue: boolean;
+  /** Overage videos billed on this row (balance only) and their charge. */
+  overageCount: number;
+  overageCharge: number;
 };
 
 export type HealthStatus =
@@ -78,7 +81,14 @@ export function assembleClient(
     asOf,
   );
 
-  const schedule = buildPaymentSchedule(retainer, payments, computation, asOf, priceOverrides);
+  // Overage videos per billing month → billed on that month's balance.
+  const overageByPeriod: Record<number, number> = {};
+  for (const p of computation.periods) overageByPeriod[p.index] = p.overage;
+  if (computation.current.state === "active") {
+    overageByPeriod[computation.current.periodIndex] = computation.current.overageThisPeriod;
+  }
+
+  const schedule = buildPaymentSchedule(retainer, payments, computation, asOf, priceOverrides, overageByPeriod);
   const outstanding = schedule.filter((p) => p.status === "pending").reduce((s, p) => s + p.amount, 0);
 
   return {
@@ -99,8 +109,10 @@ function buildPaymentSchedule(
   computation: RetainerComputation,
   asOf: Date,
   priceOverrides: Record<number, number> = {},
+  overageByPeriod: Record<number, number> = {},
 ): ScheduledPayment[] {
   const start = parseDateOnly(retainer.start_date);
+  const overageRate = Number(retainer.overage_rate) || 0;
   const lastIndex = computation.current.state === "active" ? computation.current.periodIndex : -1;
 
   const stored = new Map<string, Payment>();
@@ -111,10 +123,14 @@ function buildPaymentSchedule(
     const periodStart = addMonths(start, k);
     const periodEnd = addMonths(start, k + 1);
     const half = (priceOverrides[k] ?? Number(retainer.monthly_price)) / 2;
+    const overageCount = overageByPeriod[k] ?? 0;
+    const overageCharge = overageCount * overageRate;
     for (const kind of ["deposit", "balance"] as PaymentKind[]) {
       const dueDate = kind === "deposit" ? periodStart : periodEnd;
       const rec = stored.get(`${k}:${kind}`);
-      const amount = rec ? Number(rec.amount) : half;
+      // Overage is billed on the month-end balance (not the deposit).
+      const billOverage = kind === "balance" && !rec;
+      const amount = rec ? Number(rec.amount) : half + (kind === "balance" ? overageCharge : 0);
       const status = rec?.status === "paid" ? "paid" : "pending";
       rows.push({
         periodIndex: k,
@@ -125,6 +141,8 @@ function buildPaymentSchedule(
         status,
         paidOn: rec?.paid_on ?? null,
         overdue: status === "pending" && dueDate < asOf,
+        overageCount: kind === "balance" ? overageCount : 0,
+        overageCharge: billOverage ? overageCharge : 0,
       });
     }
   }
