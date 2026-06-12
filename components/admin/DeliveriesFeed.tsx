@@ -51,8 +51,8 @@ export function DeliveriesFeed({
         <ul className="divide-y divide-border">
           {deliveries.slice(0, 40).map((d) => (
             <li key={d.id} className="flex items-center gap-4 py-3">
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 font-display text-sm font-semibold tnum text-accent">
-                {d.quantity}
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 font-display text-sm font-semibold tnum text-accent" title={`${d.quantity} video${d.quantity === 1 ? "" : "s"}`}>
+                ×{d.quantity}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-foreground">{d.title || "Untitled delivery"}</div>

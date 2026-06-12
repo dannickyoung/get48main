@@ -83,8 +83,8 @@ export function DeliveriesLog({
 function Row({ v, editable = false }: { v: VideoRow; editable?: boolean }) {
   return (
     <>
-      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 font-display text-sm font-semibold tnum text-accent">
-        {v.quantity}
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 font-display text-sm font-semibold tnum text-accent" title={`${v.quantity} video${v.quantity === 1 ? "" : "s"}`}>
+        ×{v.quantity}
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium text-foreground">{v.title || "Untitled delivery"}</div>
