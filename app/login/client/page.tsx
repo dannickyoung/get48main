@@ -5,6 +5,7 @@ import { Check } from "iconoir-react";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/brand/Logo";
 import { LoadingDots } from "@/components/ui/LoadingDots";
+import { toast } from "@/lib/toast";
 
 export default function ClientLoginPage() {
   const [email, setEmail] = useState("");
@@ -23,8 +24,10 @@ export default function ClientLoginPage() {
     if (error) {
       setStatus("error");
       setMessage(error.message);
+      toast.error(error.message || "Couldn't send link");
     } else {
       setStatus("sent");
+      toast.success("Sign-in link sent");
     }
   }
 

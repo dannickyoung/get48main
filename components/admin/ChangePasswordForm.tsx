@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { changePassword } from "@/app/actions";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { LoadingDots } from "@/components/ui/LoadingDots";
+import { toast } from "@/lib/toast";
 
 const inputCls =
   "w-full rounded-lg bg-background px-3.5 py-2.5 text-sm text-foreground ring-1 ring-border transition placeholder:text-faint focus:ring-2 focus:ring-accent";
@@ -11,6 +12,14 @@ const labelCls = "text-xs font-semibold uppercase tracking-wider text-faint";
 
 export function ChangePasswordForm() {
   const [state, action, pending] = useActionState(changePassword, {});
+  const seen = useRef(state);
+
+  useEffect(() => {
+    if (state === seen.current) return;
+    seen.current = state;
+    if (state.ok) toast.success("Password updated");
+    else if (state.error) toast.error(state.error);
+  }, [state]);
 
   return (
     <form action={action} className="mt-5 grid max-w-md gap-4">

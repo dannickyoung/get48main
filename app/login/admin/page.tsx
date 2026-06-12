@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/brand/Logo";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { LoadingDots } from "@/components/ui/LoadingDots";
+import { toast } from "@/lib/toast";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -23,7 +24,9 @@ export default function AdminLoginPage() {
     if (error) {
       setStatus("error");
       setMessage(error.message);
+      toast.error(error.message || "Couldn't sign in");
     } else {
+      toast.success("Signed in");
       router.push("/admin");
       router.refresh();
     }

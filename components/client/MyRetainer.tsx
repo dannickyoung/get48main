@@ -26,7 +26,12 @@ export function MyRetainer({ view }: { view: ClientView }) {
       </div>
       <UtilizationTrend computation={computation} />
       <HistoryCard computation={computation} />
-      <RetainerTermsCard retainer={retainer} readOnly />
+      <RetainerTermsCard
+        retainer={retainer}
+        readOnly
+        cycleStart={computation.current.periodStart}
+        cycleEnd={computation.current.periodEnd}
+      />
     </div>
   );
 }

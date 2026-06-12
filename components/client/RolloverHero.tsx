@@ -6,7 +6,9 @@ export function RolloverHero({ computation }: { computation: RetainerComputation
   const { current, terms } = computation;
   const { rollover } = current;
   const days = rollover.daysToNextExpiry;
-  const urgent = rollover.available > 0 && days !== null && days <= 14;
+  const hasExpiry = rollover.available > 0 && days !== null;
+  // Escalate the expiry badge colour: red ≤ 3 days, amber ≤ 14, neutral beyond.
+  const expiryTone = hasExpiry && days! <= 3 ? "tint-bad" : hasExpiry && days! <= 14 ? "tint-warn" : "tint-muted";
 
   return (
     <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
@@ -37,9 +39,7 @@ export function RolloverHero({ computation }: { computation: RetainerComputation
               </p>
               {rollover.nextExpiry && (
                 <div
-                  className={`mt-3 inline-flex flex-col items-center gap-0.5 rounded-xl px-4 py-3 sm:items-start ${
-                    urgent ? "tint-warn" : "tint-muted"
-                  }`}
+                  className={`mt-3 inline-flex flex-col items-center gap-0.5 rounded-xl px-4 py-3 sm:items-start ${expiryTone}`}
                 >
                   <span className="text-xs font-semibold uppercase tracking-wider">
                     {rollover.nextExpiryCount} {rollover.nextExpiryCount === 1 ? "video" : "videos"} expire

@@ -12,16 +12,25 @@ const labelCls = "text-xs font-semibold uppercase tracking-wider text-faint";
 export function RetainerTermsCard({
   retainer,
   readOnly,
+  cycleStart,
+  cycleEnd,
 }: {
   retainer: Retainer;
   readOnly: boolean;
+  cycleStart?: Date;
+  cycleEnd?: Date;
 }) {
   return (
     <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
       <h2 className="font-display text-lg font-semibold tracking-tight">Retainer terms</h2>
 
       <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4">
-        <Term label="Start date" value={shortDate(retainer.start_date)} />
+        <Term label="Retainer start" value={shortDate(retainer.start_date)} />
+        {cycleStart && cycleEnd ? (
+          <Term label="Current cycle" value={`${shortDate(cycleStart)} – ${shortDate(cycleEnd)}`} />
+        ) : (
+          <Term label="Status" value={retainer.status} />
+        )}
         <Term label="Videos / month" value={retainer.videos_per_month} />
         <Term label="Monthly price" value={money(retainer.monthly_price)} />
         <Term label="Overage rate" value={retainer.overage_rate ? `${money(retainer.overage_rate)} / video` : "—"} />

@@ -68,7 +68,12 @@ export function ClientDetail({
 
           <DeliveriesLog clientId={client.id} videos={view.videos} readOnly={readOnly} />
 
-          <RetainerTermsCard retainer={retainer} readOnly={readOnly} />
+          <RetainerTermsCard
+            retainer={retainer}
+            readOnly={readOnly}
+            cycleStart={computation.current.periodStart}
+            cycleEnd={computation.current.periodEnd}
+          />
 
           {!readOnly && <AdminClientControls client={client} />}
         </>
