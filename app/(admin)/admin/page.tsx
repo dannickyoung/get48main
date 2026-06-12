@@ -70,7 +70,7 @@ export default async function OverviewPage() {
     <div className="rise space-y-8">
       <Header />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="stagger grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Active clients" value={active.length} info="Clients with a live (non-archived) retainer." />
         <Stat
           label="Delivered this month"
@@ -93,7 +93,7 @@ export default async function OverviewPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="stagger grid gap-4 lg:grid-cols-3">
         <AttentionCard title="Rollover expiring" items={expiring} emptyText="Nothing expiring in the next 3 weeks." />
         <AttentionCard title="Payments outstanding" items={duePayments} emptyText="Everyone's paid up." />
         <AttentionCard title="Over allotment" items={over} emptyText="No one's over this month." />

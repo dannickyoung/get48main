@@ -37,6 +37,11 @@
 
   --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-bricolage), var(--font-hanken), sans-serif;
+
+  /* Motion — punchy custom ease-out + snappy default for all `transition` utils. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --default-transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  --default-transition-duration: 160ms;
 }
 
 @layer base {
@@ -99,6 +104,22 @@
   }
   button:disabled {
     cursor: not-allowed;
+  }
+
+  /* Press feedback — every button subtly responds to a press. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    transition: transform 140ms var(--ease-out);
+  }
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: scale(0.97);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    button:active,
+    [role="button"]:active {
+      transform: none;
+    }
   }
 
   /* Tabular figures everywhere numbers live — money & counts must align. */
@@ -213,6 +234,36 @@
   }
   .rise {
     animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Staggered list entrance — children cascade in. */
+  @keyframes stagger-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .stagger > * {
+    opacity: 0;
+    animation: stagger-in 0.42s var(--ease-out) forwards;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 20ms; }
+  .stagger > *:nth-child(2) { animation-delay: 55ms; }
+  .stagger > *:nth-child(3) { animation-delay: 90ms; }
+  .stagger > *:nth-child(4) { animation-delay: 125ms; }
+  .stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .stagger > *:nth-child(6) { animation-delay: 195ms; }
+  .stagger > *:nth-child(7) { animation-delay: 230ms; }
+  .stagger > *:nth-child(n + 8) { animation-delay: 265ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .stagger > * {
+      animation: none;
+      opacity: 1;
+    }
   }
 
   @keyframes toast-in {

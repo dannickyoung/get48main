@@ -88,7 +88,7 @@ export function ClientsDirectory({ clients }: { clients: ClientSummary[] }) {
           />
         )
       ) : (
-        <ul className="space-y-3">
+        <ul className="stagger space-y-3">
           {list.map((c) => (
             <li key={c.id}>
               <Link

@@ -64,7 +64,11 @@ export function DashboardView({
             </Link>
           </div>
         ) : (
-          active.map((v) => <ClientRow key={v.client.id} view={v} hrefBase={hrefBase} />)
+          <div className="stagger space-y-3">
+            {active.map((v) => (
+              <ClientRow key={v.client.id} view={v} hrefBase={hrefBase} />
+            ))}
+          </div>
         )}
       </section>
 

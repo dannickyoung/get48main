@@ -34,7 +34,12 @@ export function ThisMonthCard({ computation }: { computation: RetainerComputatio
       </div>
 
       <div className="mt-5">
-        <UsageMeter allotment={current.allotment} used={current.usedFromFresh} overage={current.overageThisPeriod} />
+        <UsageMeter
+          allotment={current.allotment}
+          used={current.totalUsedThisPeriod}
+          rollover={current.usedFromRollover + current.rollover.available}
+          overage={current.overageThisPeriod}
+        />
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-3 text-center">

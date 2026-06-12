@@ -12,7 +12,7 @@ export function ClientRow({ view, hrefBase = "/clients" }: { view: ClientView; h
   return (
     <Link
       href={`${hrefBase}/${client.id}`}
-      className="group flex flex-col gap-3 rounded-lg bg-surface p-4 ring-1 ring-border transition hover:bg-surface-2 hover:ring-border-strong sm:grid sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_16px] sm:items-center sm:gap-x-8 sm:p-5"
+      className="group flex flex-col gap-3 rounded-lg bg-surface p-4 ring-1 ring-border transition hover:bg-surface-2 hover:ring-border-strong active:scale-[0.99] sm:grid sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_16px] sm:items-center sm:gap-x-8 sm:p-5"
     >
       {/* Identity */}
       <div className="min-w-0">
