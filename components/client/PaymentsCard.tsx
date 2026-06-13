@@ -64,7 +64,7 @@ export function PaymentsCard({
                   </div>
                 )}
               </div>
-              <div className="mt-3 grid grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
+              <div className="mt-4 grid grid-cols-1 gap-x-10 gap-y-5 border-t border-border pt-4 sm:grid-cols-2">
                 {rows
                   .sort((a, b) => (a.kind === "deposit" ? -1 : 1))
                   .map((p) => (
