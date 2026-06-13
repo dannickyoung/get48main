@@ -31,6 +31,7 @@ export function MyRetainer({ view }: { view: ClientView }) {
         readOnly
         cycleStart={computation.current.periodStart}
         cycleEnd={computation.current.periodEnd}
+        current={view.currentTerms ?? undefined}
       />
     </div>
   );

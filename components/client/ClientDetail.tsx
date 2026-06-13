@@ -74,6 +74,7 @@ export function ClientDetail({
             readOnly={readOnly}
             cycleStart={computation.current.periodStart}
             cycleEnd={computation.current.periodEnd}
+            current={view.currentTerms ?? undefined}
           />
 
           {!readOnly && (

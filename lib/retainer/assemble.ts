@@ -31,6 +31,12 @@ export type HealthStatus =
   | "ended"
   | "no_retainer";
 
+export type EffectiveTerms = {
+  videosPerMonth: number;
+  monthlyPrice: number;
+  overageRate: number;
+};
+
 export type ClientView = {
   client: Client;
   retainer: Retainer | null;
@@ -38,6 +44,8 @@ export type ClientView = {
   payments: ScheduledPayment[];
   videos: VideoRow[];
   months: RetainerMonth[];
+  /** The current billing month's effective terms (base merged with its override). */
+  currentTerms: EffectiveTerms | null;
   outstanding: number;
   health: HealthStatus;
 };
@@ -51,7 +59,7 @@ export function assembleClient(
   months: RetainerMonth[] = [],
 ): ClientView {
   if (!retainer) {
-    return { client, retainer: null, computation: null, payments: [], videos, months, outstanding: 0, health: "no_retainer" };
+    return { client, retainer: null, computation: null, payments: [], videos, months, currentTerms: null, outstanding: 0, health: "no_retainer" };
   }
 
   const deliveries: Delivery[] = videos.map((v) => ({
@@ -101,6 +109,15 @@ export function assembleClient(
   );
   const outstanding = schedule.filter((p) => p.status === "pending").reduce((s, p) => s + p.amount, 0);
 
+  // The current billing month's effective terms: base retainer merged with any
+  // override for that specific month.
+  const ci = computation.current.periodIndex;
+  const currentTerms: EffectiveTerms = {
+    videosPerMonth: videoOverrides[ci] ?? retainer.videos_per_month,
+    monthlyPrice: priceOverrides[ci] ?? Number(retainer.monthly_price),
+    overageRate: overageRateOverrides[ci] ?? Number(retainer.overage_rate),
+  };
+
   return {
     client,
     retainer,
@@ -108,6 +125,7 @@ export function assembleClient(
     payments: schedule,
     videos,
     months,
+    currentTerms,
     outstanding,
     health: deriveHealth(retainer, computation, schedule),
   };

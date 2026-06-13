@@ -5,6 +5,7 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ActionForm } from "@/components/ui/ActionForm";
 import { Section } from "@/components/ui/Section";
 import { money, shortDate } from "@/lib/format";
+import type { EffectiveTerms } from "@/lib/retainer/assemble";
 import type { Retainer } from "@/lib/types";
 
 const inputCls =
@@ -16,12 +17,19 @@ export function RetainerTermsCard({
   readOnly,
   cycleStart,
   cycleEnd,
+  current,
 }: {
   retainer: Retainer;
   readOnly: boolean;
   cycleStart?: Date;
   cycleEnd?: Date;
+  /** Current billing month's effective terms (falls back to retainer base). */
+  current?: EffectiveTerms;
 }) {
+  const videosPerMonth = current?.videosPerMonth ?? retainer.videos_per_month;
+  const monthlyPrice = current?.monthlyPrice ?? retainer.monthly_price;
+  const overageRate = current?.overageRate ?? retainer.overage_rate;
+
   return (
     <Section title="Retainer terms">
       <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
@@ -31,9 +39,9 @@ export function RetainerTermsCard({
         ) : (
           <Term label="Status" value={retainer.status} />
         )}
-        <Term label="Videos / month" value={retainer.videos_per_month} />
-        <Term label="Monthly price" value={money(retainer.monthly_price)} />
-        <Term label="Overage rate" value={retainer.overage_rate ? `${money(retainer.overage_rate)} / video` : "—"} />
+        <Term label="Videos / month" value={videosPerMonth} />
+        <Term label="Monthly price" value={money(monthlyPrice)} />
+        <Term label="Overage rate" value={overageRate ? `${money(overageRate)} / video` : "—"} />
         <Term label="Rollover cap" value={`${retainer.rollover_cap} videos`} />
         <Term label="Rollover window" value={`${retainer.rollover_weeks} weeks`} />
       </dl>
