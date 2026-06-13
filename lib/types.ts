@@ -26,6 +26,8 @@ export type Retainer = {
   created_at: string;
 };
 
+export type VideoStatus = "not_started" | "in_progress" | "completed";
+
 export type VideoRow = {
   id: string;
   client_id: string;
@@ -33,6 +35,7 @@ export type VideoRow = {
   quantity: number;
   title: string | null;
   link: string | null;
+  status: VideoStatus;
   created_at: string;
 };
 

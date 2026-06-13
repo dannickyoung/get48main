@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProfile } from "@/lib/auth";
 import { todaySGTString } from "@/lib/time";
+import { toVideoStatus } from "@/lib/video-status";
 import {
   sendClientWelcome,
   sendRetainerPaused,
@@ -284,6 +285,7 @@ export async function logDelivery(clientId: string, formData: FormData) {
     quantity: Math.max(1, numOr(formData, "quantity", 1)),
     title: str(formData, "title") || null,
     link: str(formData, "link") || null,
+    status: toVideoStatus(formData.get("status")),
   });
   if (error) throw new Error(error.message);
   revalidatePath(`/clients/${clientId}`);
@@ -308,6 +310,7 @@ export async function updateDelivery(videoId: string, clientId: string, formData
       quantity: Math.max(1, numOr(formData, "quantity", 1)),
       title: str(formData, "title") || null,
       link: str(formData, "link") || null,
+      status: toVideoStatus(formData.get("status")),
     })
     .eq("id", videoId);
   if (error) throw new Error(error.message);

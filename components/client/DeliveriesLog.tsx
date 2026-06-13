@@ -4,8 +4,10 @@ import { NumberField } from "@/components/ui/NumberField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ActionForm } from "@/components/ui/ActionForm";
 import { DeleteDeliveryButton } from "@/components/client/DeleteDeliveryButton";
+import { VideoStatusBadge } from "@/components/ui/VideoStatusBadge";
 import { shortDate } from "@/lib/format";
 import { todaySGTString } from "@/lib/time";
+import { VIDEO_STATUSES } from "@/lib/video-status";
 import type { VideoRow } from "@/lib/types";
 
 const inputCls =
@@ -15,29 +17,39 @@ export function DeliveriesLog({
   clientId,
   videos,
   readOnly,
+  hideTitle = false,
 }: {
   clientId: string;
   videos: VideoRow[];
   readOnly: boolean;
+  hideTitle?: boolean;
 }) {
   const today = todaySGTString();
+  const total = videos.reduce((s, v) => s + v.quantity, 0);
 
   return (
     <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
       <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Delivered videos</h2>
-        <span className="text-sm text-faint tnum">{videos.reduce((s, v) => s + v.quantity, 0)} total</span>
+        {!hideTitle && <h2 className="font-display text-lg font-semibold tracking-tight">Delivered videos</h2>}
+        <span className="ml-auto text-sm text-faint tnum">{total} total</span>
       </div>
 
       {!readOnly && (
         <ActionForm
           action={logDelivery.bind(null, clientId)}
           success="Delivery logged"
-          className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-surface-2 p-4 sm:grid-cols-[150px_1fr_96px_auto]"
+          className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-surface-2 p-4 sm:grid-cols-[150px_1fr_96px_150px_auto]"
         >
           <DateField name="delivered_on" defaultValue={today} required className={inputCls} />
           <input type="text" name="title" placeholder="Title / concept (optional)" className={inputCls} />
           <NumberField name="quantity" min={1} defaultValue={1} className={inputCls} aria-label="Quantity" />
+          <select name="status" defaultValue="completed" aria-label="Status" className={`field-select ${inputCls}`}>
+            {VIDEO_STATUSES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
           <SubmitButton className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover">
             Log
           </SubmitButton>
@@ -65,13 +77,20 @@ export function DeliveriesLog({
                   <ActionForm
                     action={updateDelivery.bind(null, v.id, clientId)}
                     success="Delivery updated"
-                    className="grid grid-cols-2 gap-3 sm:grid-cols-[150px_1fr_96px]"
+                    className="grid grid-cols-2 gap-3 sm:grid-cols-[150px_1fr_96px_150px]"
                   >
                     <DateField name="delivered_on" defaultValue={v.delivered_on} className={inputCls} />
                     <input type="text" name="title" defaultValue={v.title ?? ""} placeholder="Title / concept" className={inputCls} />
                     <NumberField name="quantity" min={1} defaultValue={v.quantity} className={inputCls} aria-label="Quantity" />
-                    <input type="url" name="link" defaultValue={v.link ?? ""} placeholder="Link (optional)" className={`${inputCls} sm:col-span-3`} />
-                    <div className="col-span-2 flex items-center justify-end gap-2 sm:col-span-3">
+                    <select name="status" defaultValue={v.status} aria-label="Status" className={`field-select ${inputCls}`}>
+                      {VIDEO_STATUSES.map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                    <input type="url" name="link" defaultValue={v.link ?? ""} placeholder="Link (optional)" className={`${inputCls} sm:col-span-4`} />
+                    <div className="col-span-2 flex items-center justify-end gap-2 sm:col-span-4">
                       <DeleteDeliveryButton videoId={v.id} clientId={clientId} />
                       <SubmitButton
                         pendingLabel="Saving"
@@ -101,6 +120,7 @@ function Row({ v, editable = false }: { v: VideoRow; editable?: boolean }) {
         <div className="truncate text-sm font-medium text-foreground">{v.title || "Untitled delivery"}</div>
         <div className="text-xs text-faint tnum">{shortDate(v.delivered_on)}</div>
       </div>
+      <VideoStatusBadge status={v.status} />
       {v.link && (
         <a href={v.link} target="_blank" rel="noreferrer" className="text-xs font-medium text-accent hover:text-accent-hover" onClick={(e) => e.stopPropagation()}>
           View

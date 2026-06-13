@@ -4,8 +4,10 @@ import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ActionForm } from "@/components/ui/ActionForm";
+import { VideoStatusBadge } from "@/components/ui/VideoStatusBadge";
 import { shortDate } from "@/lib/format";
 import { todaySGTString } from "@/lib/time";
+import { VIDEO_STATUSES } from "@/lib/video-status";
 import type { DeliveryWithClient } from "@/lib/aggregate";
 
 const inputCls =
@@ -26,7 +28,7 @@ export function DeliveriesFeed({
         <ActionForm
           action={logDeliveryQuick}
           success="Delivery logged"
-          className="grid grid-cols-2 gap-3 rounded-2xl bg-surface p-5 ring-1 ring-border sm:grid-cols-[1.2fr_150px_1.6fr_96px_auto] sm:p-6"
+          className="grid grid-cols-2 gap-3 rounded-2xl bg-surface p-5 ring-1 ring-border sm:grid-cols-[1.2fr_150px_1.6fr_96px_150px_auto] sm:p-6"
         >
           <select name="client_id" required defaultValue="" className={`field-select ${inputCls}`} aria-label="Client">
             <option value="" disabled>
@@ -41,6 +43,13 @@ export function DeliveriesFeed({
           <DateField name="delivered_on" defaultValue={today} required className={inputCls} />
           <input type="text" name="title" placeholder="Title / concept (optional)" className={inputCls} />
           <NumberField name="quantity" min={1} defaultValue={1} className={inputCls} aria-label="Quantity" />
+          <select name="status" defaultValue="completed" aria-label="Status" className={`field-select ${inputCls}`}>
+            {VIDEO_STATUSES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
           <SubmitButton
             pendingLabel="Logging"
             className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
@@ -51,8 +60,7 @@ export function DeliveriesFeed({
       )}
 
       <section className="rounded-2xl bg-surface p-5 ring-1 ring-border sm:p-6">
-        <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-faint">Recent deliveries</h2>
+        <div className="mb-3 flex items-baseline justify-end">
           <span className="text-sm text-faint tnum">{deliveries.reduce((s, d) => s + d.quantity, 0)} total</span>
         </div>
         <ul className="divide-y divide-border">
@@ -67,6 +75,7 @@ export function DeliveriesFeed({
                   {d.clientName}
                 </Link>
               </div>
+              <VideoStatusBadge status={d.status} />
               <div className="text-xs text-faint tnum">{shortDate(d.delivered_on)}</div>
               {d.link && (
                 <a href={d.link} target="_blank" rel="noreferrer" className="text-xs font-medium text-accent hover:text-accent-hover">

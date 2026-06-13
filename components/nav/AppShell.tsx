@@ -57,7 +57,7 @@ export function AppShell({
           <div className="truncate text-[13px] font-medium text-foreground">{email}</div>
           <div className="mt-0.5 text-[11px] uppercase tracking-wider text-faint">{roleLabel}</div>
           <form action="/auth/signout" method="post" className="mt-3">
-            <button className="w-full rounded-lg bg-background px-3 py-2 text-xs font-semibold text-muted ring-1 ring-border transition hover:text-foreground hover:ring-border-strong">
+            <button className="w-full rounded-lg bg-surface-3 px-3 py-2 text-xs font-semibold text-muted ring-1 ring-border transition hover:text-foreground hover:ring-border-strong">
               Sign out
             </button>
           </form>

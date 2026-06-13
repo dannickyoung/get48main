@@ -14,7 +14,7 @@ export default async function MyDeliveriesPage() {
         <h1 className="font-display text-3xl font-semibold tracking-tight">Deliveries</h1>
         <p className="mt-1.5 text-[15px] text-muted">Every video delivered on your retainer.</p>
       </div>
-      <DeliveriesLog clientId={view.client.id} videos={view.videos} readOnly />
+      <DeliveriesLog clientId={view.client.id} videos={view.videos} readOnly hideTitle />
     </div>
   );
 }

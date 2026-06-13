@@ -131,6 +131,7 @@ function specToView(spec: Spec): ClientView {
     quantity: v.quantity ?? 1,
     title: v.title ?? null,
     link: null,
+    status: "completed" as const,
     created_at: v.delivered_on,
   }));
 

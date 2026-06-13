@@ -20,6 +20,7 @@ export default async function MyPaymentsPage() {
         outstanding={view.outstanding}
         monthlyPrice={view.retainer?.monthly_price ?? 0}
         readOnly
+        hideTitle
       />
     </div>
   );

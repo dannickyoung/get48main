@@ -9,12 +9,14 @@ export function PaymentsCard({
   outstanding,
   monthlyPrice,
   readOnly,
+  hideTitle = false,
 }: {
   clientId: string;
   payments: ScheduledPayment[];
   outstanding: number;
   monthlyPrice: number;
   readOnly: boolean;
+  hideTitle?: boolean;
 }) {
   // Group by period, newest first.
   const byPeriod = new Map<number, ScheduledPayment[]>();
@@ -28,8 +30,8 @@ export function PaymentsCard({
   return (
     <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
       <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Payments</h2>
-        <div className="text-right">
+        {!hideTitle && <h2 className="font-display text-lg font-semibold tracking-tight">Payments</h2>}
+        <div className="ml-auto text-right">
           <div className="text-xs uppercase tracking-wider text-faint">Outstanding</div>
           <div className={`font-display text-lg font-semibold tnum ${outstanding > 0 ? "text-warn" : "text-accent"}`}>
             {money(outstanding)}
@@ -58,7 +60,7 @@ export function PaymentsCard({
                 {rows
                   .sort((a, b) => (a.kind === "deposit" ? -1 : 1))
                   .map((p) => (
-                    <div key={p.kind} className="rounded-lg bg-background px-3 py-3">
+                    <div key={p.kind} className="rounded-lg bg-surface-3 px-3 py-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold uppercase tracking-wider text-faint">
                           {p.kind}
