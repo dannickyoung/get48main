@@ -21,6 +21,7 @@ export default async function MyPaymentsPage() {
         monthlyPrice={view.retainer?.monthly_price ?? 0}
         readOnly
         hideTitle
+        showSchedule
       />
     </div>
   );
