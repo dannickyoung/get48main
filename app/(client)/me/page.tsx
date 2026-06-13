@@ -14,12 +14,14 @@ export default async function MyRetainerPage() {
     );
   }
 
+  const firstName = view.client.name.trim().split(/\s+/)[0] || view.client.name;
+
   return (
     <div className="rise space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">{view.client.name}</h1>
-          <p className="mt-1 text-[15px] text-muted">Your retainer at a glance.</p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back, {firstName}</h1>
+          <p className="mt-1 text-[15px] text-muted">Here&apos;s your retainer at a glance.</p>
         </div>
         <StatusPill health={view.health} />
       </header>
