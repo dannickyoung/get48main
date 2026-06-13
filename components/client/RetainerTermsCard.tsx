@@ -3,6 +3,7 @@ import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ActionForm } from "@/components/ui/ActionForm";
+import { Section } from "@/components/ui/Section";
 import { money, shortDate } from "@/lib/format";
 import type { Retainer } from "@/lib/types";
 
@@ -22,10 +23,8 @@ export function RetainerTermsCard({
   cycleEnd?: Date;
 }) {
   return (
-    <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-      <h2 className="font-display text-lg font-semibold tracking-tight">Retainer terms</h2>
-
-      <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4">
+    <Section title="Retainer terms">
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
         <Term label="Retainer start" value={shortDate(retainer.start_date)} />
         {cycleStart && cycleEnd ? (
           <Term label="Current cycle" value={`${shortDate(cycleStart)} – ${shortDate(cycleEnd)}`} />
@@ -78,7 +77,7 @@ export function RetainerTermsCard({
           </ActionForm>
         </details>
       )}
-    </section>
+    </Section>
   );
 }
 

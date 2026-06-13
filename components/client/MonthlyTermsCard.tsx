@@ -5,6 +5,7 @@ import { NumberField } from "@/components/ui/NumberField";
 import { ActionForm } from "@/components/ui/ActionForm";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { Pill } from "@/components/ui/StatusPill";
+import { Section } from "@/components/ui/Section";
 import { setMonthTerms } from "@/app/actions";
 import type { Retainer, RetainerMonth } from "@/lib/types";
 
@@ -37,16 +38,16 @@ export function MonthlyTermsCard({
   }
 
   return (
-    <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Monthly terms</h2>
+    <Section
+      title="Monthly terms"
+      description="Override videos or price for a specific month. Blank = retainer default."
+      aside={
         <span className="text-xs text-faint tnum">
           default {retainer.videos_per_month}/mo · {money(retainer.monthly_price)}
         </span>
-      </div>
-      <p className="mt-1 text-sm text-muted">Override videos or price for a specific month. Blank = retainer default.</p>
-
-      <ul className="mt-4 divide-y divide-border">
+      }
+    >
+      <ul className="divide-y divide-border">
         {rows.map((r) => {
           const overridden = r.videos != null || r.price != null;
           return (
@@ -129,6 +130,6 @@ export function MonthlyTermsCard({
           );
         })}
       </ul>
-    </section>
+    </Section>
   );
 }

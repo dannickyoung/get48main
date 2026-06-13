@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { AreaTrend } from "@/components/charts/AreaTrend";
+import { Section } from "@/components/ui/Section";
 import type { RetainerComputation } from "@/lib/retainer/engine";
 
 export function UtilizationTrend({ computation }: { computation: RetainerComputation }) {
@@ -19,13 +20,11 @@ export function UtilizationTrend({ computation }: { computation: RetainerComputa
   ].slice(-12);
 
   return (
-    <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Utilization</h2>
-        <span className="text-xs text-faint">videos delivered · last {rows.length} months</span>
-      </div>
-
-      <div className="mt-5">
+    <Section
+      title="Utilization"
+      aside={<span className="text-xs text-faint">videos delivered · last {rows.length} months</span>}
+    >
+      <div>
         <AreaTrend
           data={rows}
           xKey="label"
@@ -43,7 +42,7 @@ export function UtilizationTrend({ computation }: { computation: RetainerComputa
         <Legend swatch="var(--color-accent-dim)" label="From rollover" />
         <Legend swatch="var(--color-warn)" label="Overage" />
       </div>
-    </section>
+    </Section>
   );
 }
 

@@ -5,6 +5,7 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ActionForm } from "@/components/ui/ActionForm";
 import { DeleteDeliveryButton } from "@/components/client/DeleteDeliveryButton";
 import { VideoStatusBadge } from "@/components/ui/VideoStatusBadge";
+import { Section } from "@/components/ui/Section";
 import { shortDate } from "@/lib/format";
 import { todaySGTString } from "@/lib/time";
 import { VIDEO_STATUSES } from "@/lib/video-status";
@@ -28,19 +29,15 @@ export function DeliveriesLog({
   const total = videos.reduce((s, v) => s + v.quantity, 0);
 
   return (
-    <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-      {!hideTitle && (
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-lg font-semibold tracking-tight">Delivered videos</h2>
-          <span className="text-sm text-faint tnum">{total} total</span>
-        </div>
-      )}
-
+    <Section
+      title={hideTitle ? undefined : "Delivered videos"}
+      aside={hideTitle ? undefined : <span className="text-sm text-faint tnum">{total} total</span>}
+    >
       {!readOnly && (
         <ActionForm
           action={logDelivery.bind(null, clientId)}
           success="Delivery logged"
-          className="mt-5 grid grid-cols-2 gap-3 rounded-xl bg-surface-2 p-4 sm:grid-cols-[150px_1fr_96px_150px_auto]"
+          className="grid grid-cols-2 gap-3 rounded-xl bg-surface-2 p-4 sm:grid-cols-[150px_1fr_96px_150px_auto]"
         >
           <DateField name="delivered_on" defaultValue={today} required className={inputCls} />
           <input type="text" name="title" placeholder="Title / concept (optional)" className={inputCls} />
@@ -58,7 +55,7 @@ export function DeliveriesLog({
         </ActionForm>
       )}
 
-      <ul className={`${hideTitle && readOnly ? "" : "mt-5"} divide-y divide-border`}>
+      <ul className={`${readOnly ? "" : "mt-5"} divide-y divide-border`}>
         {videos.length === 0 && (
           <li className="py-8 text-center text-sm text-faint">
             No videos logged yet{readOnly ? "." : " — add the first delivery above."}
@@ -108,7 +105,7 @@ export function DeliveriesLog({
           </li>
         ))}
       </ul>
-    </section>
+    </Section>
   );
 }
 

@@ -1,3 +1,4 @@
+import { Section } from "@/components/ui/Section";
 import type { PeriodSummary, RetainerComputation } from "@/lib/retainer/engine";
 import { monthLabel } from "@/lib/format";
 
@@ -7,12 +8,11 @@ export function HistoryCard({ computation }: { computation: RetainerComputation 
   const periods = [...computation.periods].reverse();
   if (periods.length === 0) {
     return (
-      <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Month history</h2>
-        <p className="mt-4 text-center text-sm text-faint">
+      <Section title="Month history">
+        <p className="text-center text-sm text-faint">
           No completed months yet. The first month is still in progress.
         </p>
-      </section>
+      </Section>
     );
   }
 
@@ -20,12 +20,8 @@ export function HistoryCard({ computation }: { computation: RetainerComputation 
   const older = periods.slice(VISIBLE);
 
   return (
-    <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Month history</h2>
-        <span className="text-xs text-faint tnum">{periods.length} months</span>
-      </div>
-      <div className="mt-4 -mx-2 overflow-x-auto">
+    <Section title="Month history" aside={<span className="text-xs text-faint tnum">{periods.length} months</span>}>
+      <div className="-mx-2 overflow-x-auto">
         <table className="w-full min-w-[460px] text-sm">
           <thead>
             <tr className="text-left text-[11px] uppercase tracking-wider text-faint">
@@ -54,7 +50,7 @@ export function HistoryCard({ computation }: { computation: RetainerComputation 
           </div>
         </details>
       )}
-    </section>
+    </Section>
   );
 }
 

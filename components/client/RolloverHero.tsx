@@ -1,4 +1,5 @@
 import { RingGauge } from "@/components/ui/RingGauge";
+import { Section } from "@/components/ui/Section";
 import type { RetainerComputation } from "@/lib/retainer/engine";
 import { shortDate, relativeDays } from "@/lib/format";
 
@@ -11,14 +12,8 @@ export function RolloverHero({ computation }: { computation: RetainerComputation
   const expiryTone = hasExpiry && days! <= 3 ? "tint-bad" : hasExpiry && days! <= 14 ? "tint-warn" : "tint-muted";
 
   return (
-    <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-faint">
-          Rolling over now
-        </h2>
-      </div>
-
-      <div className="mt-5 flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+    <Section title="Rolling over now">
+      <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
         <RingGauge value={rollover.available} max={terms.rolloverCap}>
           <div>
             <div className="font-display text-4xl font-bold leading-none tnum text-accent">
@@ -65,6 +60,6 @@ export function RolloverHero({ computation }: { computation: RetainerComputation
           </div>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

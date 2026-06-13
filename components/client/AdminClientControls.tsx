@@ -2,6 +2,7 @@ import { updateClient, pauseRetainer, stopRetainer, resumeRetainer } from "@/app
 import { DeleteClientButton } from "@/components/client/DeleteClientButton";
 import { ActionForm } from "@/components/ui/ActionForm";
 import { SubmitButton } from "@/components/ui/SubmitButton";
+import { Section } from "@/components/ui/Section";
 import type { Client } from "@/lib/types";
 
 const inputCls =
@@ -11,13 +12,11 @@ const labelCls = "text-xs font-semibold uppercase tracking-wider text-faint";
 export function AdminClientControls({ client }: { client: Client }) {
   return (
     <>
-      <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Client details</h2>
-
+      <Section title="Client details">
         <ActionForm
           action={updateClient.bind(null, client.id)}
           success="Client details updated"
-          className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2"
         >
           <label className="block">
             <span className={labelCls}>Name</span>
@@ -44,12 +43,10 @@ export function AdminClientControls({ client }: { client: Client }) {
             </SubmitButton>
           </div>
         </ActionForm>
-      </section>
+      </Section>
 
-      <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-        <h2 className="font-display text-lg font-semibold tracking-tight">Manage retainer</h2>
-
-        <div className="mt-3 divide-y divide-border">
+      <Section title="Manage retainer">
+        <div className="divide-y divide-border">
           {client.archived ? (
             <Row title="Reactivate retainer" desc="Set the retainer active and move the client out of Archived. Emails them a welcome back.">
               <ActionForm action={resumeRetainer.bind(null, client.id)} success="Retainer reactivated, client emailed">
@@ -90,7 +87,7 @@ export function AdminClientControls({ client }: { client: Client }) {
             <DeleteClientButton clientId={client.id} name={client.name} />
           </Row>
         </div>
-      </section>
+      </Section>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import { UsageMeter } from "@/components/ui/UsageMeter";
 import { Pill } from "@/components/ui/StatusPill";
 import { InfoTip } from "@/components/ui/InfoTip";
+import { Section } from "@/components/ui/Section";
 import type { RetainerComputation } from "@/lib/retainer/engine";
 import { shortDate } from "@/lib/format";
 
@@ -10,17 +11,15 @@ export function ThisMonthCard({ computation }: { computation: RetainerComputatio
   const remaining = current.freshRemaining + current.rollover.available;
 
   return (
-    <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-faint">
-          This month
-        </h2>
+    <Section
+      title="This month"
+      aside={
         <span className="text-xs text-faint tnum">
           {current.daysLeftInPeriod} {current.daysLeftInPeriod === 1 ? "day" : "days"} left
         </span>
-      </div>
-
-      <div className="mt-5">
+      }
+    >
+      <div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="font-display text-4xl font-bold leading-none tnum">
             {current.usedFromFresh}
@@ -51,7 +50,7 @@ export function ThisMonthCard({ computation }: { computation: RetainerComputatio
         <Mini label="Overage" value={current.overageThisPeriod} tone={current.overageThisPeriod > 0 ? "warn" : undefined} />
         <Mini label="Resets" value={shortDate(current.periodEnd)} small />
       </div>
-    </section>
+    </Section>
   );
 }
 
