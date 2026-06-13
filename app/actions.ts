@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProfile } from "@/lib/auth";
 import { todaySGTString } from "@/lib/time";
+import { sendClientWelcome } from "@/lib/email";
 
 async function assertAdmin() {
   const profile = await getProfile();
@@ -115,6 +116,13 @@ export async function addClient(formData: FormData) {
     await admin.auth.admin.createUser({ email, email_confirm: true });
   } catch {
     /* user may already exist; they can still request a code from /login/client */
+  }
+
+  // Send a friendly welcome email with sign-in instructions (best-effort).
+  try {
+    await sendClientWelcome({ to: email, name: str(formData, "name") });
+  } catch {
+    /* welcome email is best-effort; don't block client creation */
   }
 
   revalidatePath("/admin");
