@@ -1,4 +1,4 @@
-import { updateClient, setArchived } from "@/app/actions";
+import { updateClient, pauseRetainer, stopRetainer, resumeRetainer } from "@/app/actions";
 import { DeleteClientButton } from "@/components/client/DeleteClientButton";
 import { ActionForm } from "@/components/ui/ActionForm";
 import { SubmitButton } from "@/components/ui/SubmitButton";
@@ -44,19 +44,47 @@ export function AdminClientControls({ client }: { client: Client }) {
         </div>
       </ActionForm>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-        <ActionForm
-          action={setArchived.bind(null, client.id, !client.archived)}
-          success={client.archived ? "Client unarchived" : "Client archived"}
-        >
-          <SubmitButton
-            pendingLabel={client.archived ? "Unarchiving" : "Archiving"}
-            className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-border transition hover:text-foreground hover:ring-border-strong"
-          >
-            {client.archived ? "Unarchive client" : "Archive client"}
-          </SubmitButton>
-        </ActionForm>
-        <DeleteClientButton clientId={client.id} name={client.name} />
+      <div className="mt-6 border-t border-border pt-5">
+        <div className="flex flex-wrap items-center gap-2">
+          {client.archived ? (
+            <ActionForm action={resumeRetainer.bind(null, client.id)} success="Retainer reactivated">
+              <SubmitButton
+                pendingLabel="Reactivating"
+                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
+              >
+                Reactivate retainer
+              </SubmitButton>
+            </ActionForm>
+          ) : (
+            <>
+              <ActionForm action={pauseRetainer.bind(null, client.id)} success="Retainer paused, client emailed">
+                <SubmitButton
+                  pendingLabel="Pausing"
+                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-warn ring-1 ring-border transition hover:ring-border-strong"
+                >
+                  Pause retainer
+                </SubmitButton>
+              </ActionForm>
+              <ActionForm action={stopRetainer.bind(null, client.id)} success="Retainer stopped, client emailed">
+                <SubmitButton
+                  pendingLabel="Stopping"
+                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-bad ring-1 ring-border transition hover:ring-border-strong"
+                >
+                  Stop retainer
+                </SubmitButton>
+              </ActionForm>
+            </>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="max-w-md text-xs leading-relaxed text-faint">
+            {client.archived
+              ? "This client is archived. They can still sign in to view their account. Deleting removes their login for good."
+              : "Pausing or stopping moves the client to Archived and emails them. They can still sign in. Deleting removes their login for good."}
+          </p>
+          <DeleteClientButton clientId={client.id} name={client.name} />
+        </div>
       </div>
     </section>
   );

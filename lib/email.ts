@@ -43,6 +43,43 @@ export async function sendClientWelcome({ to, name }: { to: string; name: string
   await sendMail({ to, subject: "Welcome to get48, your dashboard is ready", html: emailLayout("Welcome to get48", body) });
 }
 
+function firstName(name: string) {
+  return (name || "").trim().split(/\s+/)[0] || "there";
+}
+
+/** Retainer paused — reassuring, account still active. */
+export async function sendRetainerPaused({ to, name }: { to: string; name: string }) {
+  if (!emailConfigured()) return;
+  const body = `
+    <p style="margin:0 0 14px;">Hi ${firstName(name)},</p>
+    <p style="margin:0 0 14px;">Just a quick note to let you know we've paused your get48 retainer for now. Nothing's lost. Your account and your full history are still here, and you can log in anytime to look back over what we've delivered.</p>
+    <p style="margin:0 0 14px;">Whenever you're ready to pick things back up, just let us know and we'll switch it straight back on.</p>
+    <p style="margin:0;">Thanks for working with us,<br />The get48 team</p>`;
+  await sendMail({ to, subject: "Your get48 retainer is paused", html: emailLayout("Your retainer is paused", body) });
+}
+
+/** Retainer stopped/ended — warm goodbye, account stays open. */
+export async function sendRetainerStopped({ to, name }: { to: string; name: string }) {
+  if (!emailConfigured()) return;
+  const body = `
+    <p style="margin:0 0 14px;">Hi ${firstName(name)},</p>
+    <p style="margin:0 0 14px;">We're writing to let you know your get48 retainer has come to an end. It's been a genuine pleasure creating content with you, and we're grateful you trusted us with it.</p>
+    <p style="margin:0 0 14px;">Your account stays open, so you can still log in and look back over everything we delivered. If you'd ever like to start a new retainer down the line, we'd love to work together again. Just reach out.</p>
+    <p style="margin:0;">Wishing you all the best,<br />The get48 team</p>`;
+  await sendMail({ to, subject: "Your get48 retainer has ended", html: emailLayout("Thanks for working with us", body) });
+}
+
+/** Account deleted — login removed entirely. */
+export async function sendAccountClosed({ to, name }: { to: string; name: string }) {
+  if (!emailConfigured()) return;
+  const body = `
+    <p style="margin:0 0 14px;">Hi ${firstName(name)},</p>
+    <p style="margin:0 0 14px;">This is to confirm that your get48 account has been closed and your retainer stopped. You'll no longer be able to log in, and your access has been removed.</p>
+    <p style="margin:0 0 14px;">Thank you for doing business with us. It was a real pleasure, and we'd welcome the chance to work together again in the future.</p>
+    <p style="margin:0;">Take care,<br />The get48 team</p>`;
+  await sendMail({ to, subject: "Your get48 account has been closed", html: emailLayout("Your account has been closed", body) });
+}
+
 /** Branded email wrapper — dark, lime accent, matches the dashboard. */
 export function emailLayout(title: string, body: string) {
   return `

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProfile } from "@/lib/auth";
 import { todaySGTString } from "@/lib/time";
-import { sendClientWelcome } from "@/lib/email";
+import { sendClientWelcome, sendRetainerPaused, sendRetainerStopped, sendAccountClosed } from "@/lib/email";
 
 async function assertAdmin() {
   const profile = await getProfile();
@@ -183,27 +183,80 @@ export async function updateRetainer(clientId: string, formData: FormData) {
       overage_rate: numOr(formData, "overage_rate", 0),
       rollover_cap: numOr(formData, "rollover_cap", 5),
       rollover_weeks: numOr(formData, "rollover_weeks", 8),
-      status: str(formData, "status") || "active",
     })
     .eq("client_id", clientId);
   if (error) throw new Error(error.message);
   revalidatePath(`/clients/${clientId}`);
 }
 
-export async function setArchived(clientId: string, archived: boolean) {
+async function archiveRevalidate(clientId: string) {
+  revalidatePath("/admin");
+  revalidatePath("/clients");
+  revalidatePath("/archived");
+  revalidatePath(`/clients/${clientId}`);
+}
+
+/** Pause the retainer + archive the client (they can still log in). Emails them. */
+export async function pauseRetainer(clientId: string) {
   await assertAdmin();
   const supabase = await createClient();
-  await supabase.from("clients").update({ archived }).eq("id", clientId);
-  revalidatePath("/admin");
-  revalidatePath(`/clients/${clientId}`);
+  await supabase.from("retainers").update({ status: "paused" }).eq("client_id", clientId);
+  await supabase.from("clients").update({ archived: true }).eq("id", clientId);
+  const { data: c } = await supabase.from("clients").select("name, email").eq("id", clientId).maybeSingle();
+  if (c?.email) {
+    try {
+      await sendRetainerPaused({ to: c.email, name: c.name });
+    } catch {}
+  }
+  await archiveRevalidate(clientId);
+}
+
+/** Stop (end) the retainer + archive the client (they can still log in). Emails them. */
+export async function stopRetainer(clientId: string) {
+  await assertAdmin();
+  const supabase = await createClient();
+  await supabase.from("retainers").update({ status: "ended" }).eq("client_id", clientId);
+  await supabase.from("clients").update({ archived: true }).eq("id", clientId);
+  const { data: c } = await supabase.from("clients").select("name, email").eq("id", clientId).maybeSingle();
+  if (c?.email) {
+    try {
+      await sendRetainerStopped({ to: c.email, name: c.name });
+    } catch {}
+  }
+  await archiveRevalidate(clientId);
+}
+
+/** Reactivate a paused/stopped retainer and move the client back out of archive. */
+export async function resumeRetainer(clientId: string) {
+  await assertAdmin();
+  const supabase = await createClient();
+  await supabase.from("retainers").update({ status: "active" }).eq("client_id", clientId);
+  await supabase.from("clients").update({ archived: false }).eq("id", clientId);
+  await archiveRevalidate(clientId);
 }
 
 export async function deleteClient(clientId: string) {
   await assertAdmin();
   const supabase = await createClient();
+
+  // Grab details for the goodbye email + auth removal before deleting.
+  const { data: c } = await supabase.from("clients").select("name, email").eq("id", clientId).maybeSingle();
+  if (c?.email) {
+    try {
+      await sendAccountClosed({ to: c.email, name: c.name });
+    } catch {}
+  }
+  // Remove the auth user so a deleted client can no longer log in.
+  try {
+    const admin = createAdminClient();
+    const { data: prof } = await admin.from("profiles").select("id").eq("client_id", clientId).maybeSingle();
+    if (prof?.id) await admin.auth.admin.deleteUser(prof.id);
+  } catch {}
+
   const { error } = await supabase.from("clients").delete().eq("id", clientId);
   if (error) throw new Error(error.message);
   revalidatePath("/admin");
+  revalidatePath("/clients");
   redirect(`/admin?toast=${encodeURIComponent("Client deleted")}`);
 }
 

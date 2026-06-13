@@ -4,6 +4,7 @@ import { AppShell, type NavItem } from "@/components/nav/AppShell";
 const NAV: NavItem[] = [
   { href: "/admin", label: "Overview", icon: "overview" },
   { href: "/clients", label: "Clients", icon: "clients" },
+  { href: "/archived", label: "Archived", icon: "archived" },
   { href: "/payments", label: "Payments", icon: "payments" },
   { href: "/rollovers", label: "Rollovers", icon: "rollovers" },
   { href: "/deliveries", label: "Deliveries", icon: "deliveries" },

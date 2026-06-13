@@ -1,4 +1,4 @@
-import { ViewGrid, Group, CreditCard, RefreshDouble, MediaVideo, Settings, Globe, GraphUp } from "iconoir-react";
+import { ViewGrid, Group, CreditCard, RefreshDouble, MediaVideo, Settings, Globe, GraphUp, Archive } from "iconoir-react";
 
 const sz = { width: 19, height: 19, strokeWidth: 1.7 };
 
@@ -9,6 +9,7 @@ export const Icons = {
   rollovers: () => <RefreshDouble {...sz} />,
   deliveries: () => <MediaVideo {...sz} />,
   trends: () => <GraphUp {...sz} />,
+  archived: () => <Archive {...sz} />,
   settings: () => <Settings {...sz} />,
   retainer: () => <Globe {...sz} />,
 };

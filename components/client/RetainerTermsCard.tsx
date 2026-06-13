@@ -67,13 +67,6 @@ export function RetainerTermsCard({
             <Field label="Rollover weeks">
               <NumberField name="rollover_weeks" min={1} defaultValue={retainer.rollover_weeks} className={inputCls} />
             </Field>
-            <Field label="Status">
-              <select name="status" defaultValue={retainer.status} className={`field-select ${inputCls}`}>
-                <option value="active">Active</option>
-                <option value="paused">Paused</option>
-                <option value="ended">Ended</option>
-              </select>
-            </Field>
             <div className="col-span-2 flex justify-end">
               <SubmitButton
                 pendingLabel="Saving"
