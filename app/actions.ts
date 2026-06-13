@@ -6,7 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProfile } from "@/lib/auth";
 import { todaySGTString } from "@/lib/time";
-import { sendClientWelcome, sendRetainerPaused, sendRetainerStopped, sendAccountClosed } from "@/lib/email";
+import {
+  sendClientWelcome,
+  sendRetainerPaused,
+  sendRetainerStopped,
+  sendRetainerReactivated,
+  sendAccountClosed,
+} from "@/lib/email";
 
 async function assertAdmin() {
   const profile = await getProfile();
@@ -232,6 +238,12 @@ export async function resumeRetainer(clientId: string) {
   const supabase = await createClient();
   await supabase.from("retainers").update({ status: "active" }).eq("client_id", clientId);
   await supabase.from("clients").update({ archived: false }).eq("id", clientId);
+  const { data: c } = await supabase.from("clients").select("name, email").eq("id", clientId).maybeSingle();
+  if (c?.email) {
+    try {
+      await sendRetainerReactivated({ to: c.email, name: c.name });
+    } catch {}
+  }
   await archiveRevalidate(clientId);
 }
 

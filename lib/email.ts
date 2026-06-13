@@ -69,6 +69,18 @@ export async function sendRetainerStopped({ to, name }: { to: string; name: stri
   await sendMail({ to, subject: "Your get48 retainer has ended", html: emailLayout("Thanks for working with us", body) });
 }
 
+/** Retainer reactivated — welcome back. */
+export async function sendRetainerReactivated({ to, name }: { to: string; name: string }) {
+  if (!emailConfigured()) return;
+  const loginUrl = "https://get48.io/login/client";
+  const body = `
+    <p style="margin:0 0 14px;">Hi ${firstName(name)},</p>
+    <p style="margin:0 0 14px;">Good news, your get48 retainer is active again. We're picking things back up, so you'll start seeing fresh videos land in your account.</p>
+    <p style="margin:0 0 14px;">You can log in anytime at <a href="${loginUrl}" style="color:#c4f032;">get48.io/login/client</a> to keep an eye on this month's videos, what's rolling over, and your payments.</p>
+    <p style="margin:0;">Glad to be working together again,<br />The get48 team</p>`;
+  await sendMail({ to, subject: "Your get48 retainer is back on", html: emailLayout("Welcome back", body) });
+}
+
 /** Account deleted — login removed entirely. */
 export async function sendAccountClosed({ to, name }: { to: string; name: string }) {
   if (!emailConfigured()) return;

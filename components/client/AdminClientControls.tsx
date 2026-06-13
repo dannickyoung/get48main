@@ -47,7 +47,7 @@ export function AdminClientControls({ client }: { client: Client }) {
       <div className="mt-6 border-t border-border pt-5">
         <div className="flex flex-wrap items-center gap-2">
           {client.archived ? (
-            <ActionForm action={resumeRetainer.bind(null, client.id)} success="Retainer reactivated">
+            <ActionForm action={resumeRetainer.bind(null, client.id)} success="Retainer reactivated, client emailed">
               <SubmitButton
                 pendingLabel="Reactivating"
                 className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
