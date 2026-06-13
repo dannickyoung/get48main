@@ -33,6 +33,7 @@ export function MonthlyTermsCard({
       label: monthLabel(addMonths(start, k)),
       videos: o?.videos_per_month ?? null,
       price: o?.monthly_price != null ? Number(o.monthly_price) : null,
+      overageRate: o?.overage_rate != null ? Number(o.overage_rate) : null,
     });
   }
 
@@ -107,7 +108,8 @@ export function MonthlyTermsCard({
                       <NumberField
                         name="overage_rate"
                         min={0}
-                        defaultValue={retainer.overage_rate}
+                        defaultValue={r.overageRate ?? undefined}
+                        placeholder={`${retainer.overage_rate} (default)`}
                         className={inputCls}
                       />
                     </div>

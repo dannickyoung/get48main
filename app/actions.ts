@@ -161,24 +161,15 @@ export async function setMonthTerms(clientId: string, periodIndex: number, formD
   const oRaw = str(formData, "overage_rate");
   const videos_per_month = vRaw === "" ? null : Math.max(0, Number(vRaw));
   const monthly_price = pRaw === "" ? null : Math.max(0, Number(pRaw));
+  const overage_rate = oRaw === "" ? null : Math.max(0, Number(oRaw));
 
-  // Overage rate is a single shared value on the retainer (not per-month) —
-  // editing it here keeps the retainer's "Overage rate" in sync, and vice versa.
-  if (oRaw !== "") {
-    const { error } = await supabase
-      .from("retainers")
-      .update({ overage_rate: Math.max(0, Number(oRaw)) })
-      .eq("client_id", clientId);
-    if (error) throw new Error(error.message);
-  }
-
-  if (videos_per_month === null && monthly_price === null) {
+  if (videos_per_month === null && monthly_price === null && overage_rate === null) {
     await supabase.from("retainer_months").delete().eq("client_id", clientId).eq("period_index", periodIndex);
   } else {
     const { error } = await supabase
       .from("retainer_months")
       .upsert(
-        { client_id: clientId, period_index: periodIndex, videos_per_month, monthly_price },
+        { client_id: clientId, period_index: periodIndex, videos_per_month, monthly_price, overage_rate },
         { onConflict: "client_id,period_index" },
       );
     if (error) throw new Error(error.message);
