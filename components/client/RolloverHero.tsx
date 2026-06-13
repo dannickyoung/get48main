@@ -7,9 +7,8 @@ export function RolloverHero({ computation }: { computation: RetainerComputation
   const { current, terms } = computation;
   const { rollover } = current;
   const days = rollover.daysToNextExpiry;
-  const hasExpiry = rollover.available > 0 && days !== null;
-  // Escalate the expiry badge colour: red ≤ 3 days, amber ≤ 14, neutral beyond.
-  const expiryTone = hasExpiry && days! <= 3 ? "tint-bad" : hasExpiry && days! <= 14 ? "tint-warn" : "tint-muted";
+  // Expiry is a "use it or lose it" warning — always red.
+  const expiryTone = "tint-bad";
 
   return (
     <Section title="Rolling over now">
