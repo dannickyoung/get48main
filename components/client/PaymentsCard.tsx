@@ -39,27 +39,30 @@ export function PaymentsCard({
         </div>
       ) : (
         <div className="flex-1 divide-y divide-border overflow-hidden rounded-2xl bg-surface ring-1 ring-border">
-          {/* Outstanding (and optional schedule) live inside the card */}
-          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2 px-5 py-4 sm:px-6">
-            {showSchedule && (
+          {showSchedule && (
+            <div className="px-5 py-4 sm:px-6">
               <p className="max-w-md text-sm text-faint">
                 50% deposit at the start of each retainer month, 50% balance at month-end
                 {monthlyPrice > 0 ? ` · ${money(monthlyPrice / 2)} each` : ""}.
               </p>
-            )}
-            <div className="ml-auto text-right">
-              <div className="text-xs uppercase tracking-wider text-faint">Outstanding</div>
-              <div className={`font-display text-lg font-semibold tnum ${outstanding > 0 ? "text-warn" : "text-accent"}`}>
-                {money(outstanding)}
-              </div>
             </div>
-          </div>
+          )}
 
-          {periods.map(([idx, rows]) => (
+          {periods.map(([idx, rows], i) => (
             <div key={idx} className="px-5 py-4 sm:px-6 sm:py-5">
-              <div>
-                <div className="text-sm font-semibold tnum">{shortDate(rows[0].periodStart)}</div>
-                <div className="text-xs text-faint">Month {idx + 1}</div>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-semibold tnum">{shortDate(rows[0].periodStart)}</div>
+                  <div className="text-xs text-faint">Month {idx + 1}</div>
+                </div>
+                {i === 0 && (
+                  <div className="text-right">
+                    <div className="text-xs uppercase tracking-wider text-faint">Outstanding</div>
+                    <div className={`font-display text-lg font-semibold tnum ${outstanding > 0 ? "text-warn" : "text-accent"}`}>
+                      {money(outstanding)}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="mt-3 grid grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
                 {rows
