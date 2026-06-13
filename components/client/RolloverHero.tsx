@@ -13,7 +13,7 @@ export function RolloverHero({ computation }: { computation: RetainerComputation
 
   return (
     <Section title="Rolling over now">
-      <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+      <div className="flex h-full flex-col items-center justify-center gap-6 sm:flex-row sm:items-center sm:gap-8">
         <RingGauge value={rollover.available} max={terms.rolloverCap}>
           <div>
             <div className="font-display text-4xl font-bold leading-none tnum text-accent">
