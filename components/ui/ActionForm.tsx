@@ -32,7 +32,7 @@ export function ActionForm({
           if (typeof digest === "string" && (digest.startsWith("NEXT_REDIRECT") || digest === "NEXT_NOT_FOUND")) {
             throw e;
           }
-          toast.error(error);
+          toast.error(e instanceof Error && e.message ? e.message : error);
         }
       }}
     >
