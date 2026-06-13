@@ -68,7 +68,7 @@ export default function NewClientPage() {
             <label className="block">
               <span className={labelCls}>Monthly price</span>
               <div className="mt-1.5">
-                <NumberField name="monthly_price" min={0} step={50} defaultValue={0} className={inputCls} />
+                <NumberField name="monthly_price" min={0} defaultValue={0} className={inputCls} />
               </div>
             </label>
             <label className="block">

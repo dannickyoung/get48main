@@ -96,7 +96,6 @@ export function MonthlyTermsCard({
                       <NumberField
                         name="monthly_price"
                         min={0}
-                        step={50}
                         defaultValue={r.price ?? undefined}
                         placeholder={`${retainer.monthly_price} (default)`}
                         className={inputCls}
