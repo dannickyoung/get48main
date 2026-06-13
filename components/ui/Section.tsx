@@ -20,7 +20,7 @@ export function Section({
 }) {
   const hasHeader = Boolean(title || description || aside);
   return (
-    <section className="space-y-3">
+    <section className="flex h-full flex-col gap-3">
       {hasHeader && (
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
           <div className="max-w-xl">
@@ -30,7 +30,11 @@ export function Section({
           {aside && <div className="shrink-0">{aside}</div>}
         </div>
       )}
-      {bare ? children : <div className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">{children}</div>}
+      {bare ? (
+        children
+      ) : (
+        <div className="flex-1 rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">{children}</div>
+      )}
     </section>
   );
 }
