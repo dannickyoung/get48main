@@ -29,10 +29,12 @@ export function DeliveriesLog({
 
   return (
     <section className="rounded-2xl bg-surface p-6 ring-1 ring-border sm:p-7">
-      <div className="flex items-baseline justify-between">
-        {!hideTitle && <h2 className="font-display text-lg font-semibold tracking-tight">Delivered videos</h2>}
-        <span className="ml-auto text-sm text-faint tnum">{total} total</span>
-      </div>
+      {!hideTitle && (
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-lg font-semibold tracking-tight">Delivered videos</h2>
+          <span className="text-sm text-faint tnum">{total} total</span>
+        </div>
+      )}
 
       {!readOnly && (
         <ActionForm
@@ -56,7 +58,7 @@ export function DeliveriesLog({
         </ActionForm>
       )}
 
-      <ul className="mt-5 divide-y divide-border">
+      <ul className={`${hideTitle && readOnly ? "" : "mt-5"} divide-y divide-border`}>
         {videos.length === 0 && (
           <li className="py-8 text-center text-sm text-faint">
             No videos logged yet{readOnly ? "." : " — add the first delivery above."}
