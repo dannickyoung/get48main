@@ -64,32 +64,32 @@ export function PaymentsCard({
                 {rows
                   .sort((a, b) => (a.kind === "deposit" ? -1 : 1))
                   .map((p) => (
-                    <div key={p.kind} className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-xs font-semibold uppercase tracking-wider text-faint">{p.kind}</div>
-                        <div className="mt-1 font-display text-lg font-semibold tnum">{money(p.amount)}</div>
-                        <div className="text-xs text-faint tnum">
-                          {p.status === "paid" && p.paidOn ? `paid ${shortDate(p.paidOn)}` : `due ${shortDate(p.dueDate)}`}
-                        </div>
-                        {p.overageCount > 0 && p.overageCharge > 0 && (
-                          <div className="mt-1 text-xs font-medium text-warn tnum">
-                            incl. {p.overageCount} overage · {money(p.overageCharge)}
-                          </div>
+                    <div key={p.kind} className="min-w-0">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-faint">{p.kind}</span>
+                        {readOnly ? (
+                          <Pill tone={p.status === "paid" ? "good" : p.overdue ? "bad" : "muted"}>
+                            {p.status === "paid" ? "Paid" : p.overdue ? "Overdue" : "Due"}
+                          </Pill>
+                        ) : (
+                          <PaymentToggle
+                            clientId={clientId}
+                            periodIndex={p.periodIndex}
+                            periodStart={p.periodStart.toISOString().slice(0, 10)}
+                            kind={p.kind}
+                            amount={p.amount}
+                            paid={p.status === "paid"}
+                          />
                         )}
                       </div>
-                      {readOnly ? (
-                        <Pill tone={p.status === "paid" ? "good" : p.overdue ? "bad" : "muted"}>
-                          {p.status === "paid" ? "Paid" : p.overdue ? "Overdue" : "Due"}
-                        </Pill>
-                      ) : (
-                        <PaymentToggle
-                          clientId={clientId}
-                          periodIndex={p.periodIndex}
-                          periodStart={p.periodStart.toISOString().slice(0, 10)}
-                          kind={p.kind}
-                          amount={p.amount}
-                          paid={p.status === "paid"}
-                        />
+                      <div className="mt-1.5 font-display text-lg font-semibold tnum">{money(p.amount)}</div>
+                      <div className="text-xs text-faint tnum">
+                        {p.status === "paid" && p.paidOn ? `paid ${shortDate(p.paidOn)}` : `due ${shortDate(p.dueDate)}`}
+                      </div>
+                      {p.overageCount > 0 && p.overageCharge > 0 && (
+                        <div className="mt-1 text-xs font-medium text-warn tnum">
+                          incl. {p.overageCount} overage · {money(p.overageCharge)}
+                        </div>
                       )}
                     </div>
                   ))}
