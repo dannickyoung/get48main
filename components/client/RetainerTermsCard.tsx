@@ -58,7 +58,7 @@ export function RetainerTermsCard({
               <NumberField name="monthly_price" min={0} step={50} defaultValue={retainer.monthly_price} className={inputCls} />
             </Field>
             <Field label="Overage rate / video">
-              <NumberField name="overage_rate" min={0} step={25} defaultValue={retainer.overage_rate} className={inputCls} />
+              <NumberField name="overage_rate" min={0} defaultValue={retainer.overage_rate} className={inputCls} />
             </Field>
             <Field label="Rollover cap">
               <NumberField name="rollover_cap" min={0} defaultValue={retainer.rollover_cap} className={inputCls} />

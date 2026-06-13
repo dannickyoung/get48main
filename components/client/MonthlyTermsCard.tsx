@@ -109,7 +109,6 @@ export function MonthlyTermsCard({
                       <NumberField
                         name="overage_rate"
                         min={0}
-                        step={25}
                         defaultValue={r.overageRate ?? undefined}
                         placeholder={`${retainer.overage_rate} (default)`}
                         className={inputCls}
