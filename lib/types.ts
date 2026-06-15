@@ -13,6 +13,14 @@ export type Client = {
   created_at: string;
 };
 
+/** An additional person who can sign in and view a client's dashboard. */
+export type ClientMember = {
+  id: string;
+  client_id: string;
+  email: string;
+  created_at: string;
+};
+
 export type Retainer = {
   id: string;
   client_id: string;
@@ -26,7 +34,7 @@ export type Retainer = {
   created_at: string;
 };
 
-export type VideoStatus = "not_started" | "in_progress" | "completed";
+export type VideoStatus = "not_started" | "v1" | "v2" | "final" | "completed";
 
 export type VideoRow = {
   id: string;

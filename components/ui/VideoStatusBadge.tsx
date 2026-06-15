@@ -3,7 +3,9 @@ import { videoStatusLabel } from "@/lib/video-status";
 
 const TONE: Record<VideoStatus, { dot: string; text: string; ring: string }> = {
   not_started: { dot: "bg-faint", text: "text-muted", ring: "ring-border" },
-  in_progress: { dot: "bg-warn", text: "text-warn", ring: "ring-warn/30" },
+  v1: { dot: "bg-warn", text: "text-warn", ring: "ring-warn/30" },
+  v2: { dot: "bg-warn", text: "text-warn", ring: "ring-warn/30" },
+  final: { dot: "bg-accent", text: "text-accent", ring: "ring-accent/30" },
   completed: { dot: "bg-accent", text: "text-accent", ring: "ring-accent/30" },
 };
 

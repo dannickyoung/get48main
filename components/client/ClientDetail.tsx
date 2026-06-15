@@ -9,16 +9,20 @@ import { DeliveriesLog } from "@/components/client/DeliveriesLog";
 import { RetainerTermsCard } from "@/components/client/RetainerTermsCard";
 import { MonthlyTermsCard } from "@/components/client/MonthlyTermsCard";
 import { AdminClientControls } from "@/components/client/AdminClientControls";
+import { ClientMembers } from "@/components/client/ClientMembers";
 import type { ClientView } from "@/lib/retainer/assemble";
+import type { ClientMember } from "@/lib/types";
 
 export function ClientDetail({
   view,
   readOnly,
   backHref = "/admin",
+  members = [],
 }: {
   view: ClientView;
   readOnly: boolean;
   backHref?: string;
+  members?: ClientMember[];
 }) {
   const { client, retainer, computation } = view;
 
@@ -84,6 +88,8 @@ export function ClientDetail({
               currentIndex={computation.current.periodIndex}
             />
           )}
+
+          {!readOnly && <ClientMembers client={client} members={members} />}
 
           {!readOnly && <AdminClientControls client={client} />}
         </>

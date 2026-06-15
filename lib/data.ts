@@ -1,7 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { assembleClient, type ClientView } from "@/lib/retainer/assemble";
 import { todaySGT } from "@/lib/time";
-import type { Client, Payment, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
+import type { Client, ClientMember, Payment, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
+
+/** Additional people who can sign in to a client's dashboard. */
+export async function getClientMembers(clientId: string): Promise<ClientMember[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("client_members")
+    .select("*")
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: true });
+  return (data ?? []) as ClientMember[];
+}
 
 /** Every client, fully assembled — for the admin overview. */
 export async function getAllClientViews(): Promise<ClientView[]> {

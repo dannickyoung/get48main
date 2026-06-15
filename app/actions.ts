@@ -136,6 +136,54 @@ export async function addClient(formData: FormData) {
   redirect(`/clients/${client.id}?toast=${encodeURIComponent("Client created")}`);
 }
 
+/** Add another person who can sign in and view this client's dashboard. */
+export async function addClientMember(clientId: string, formData: FormData) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const email = str(formData, "email").toLowerCase();
+  if (!email) throw new Error("Enter an email address");
+
+  const { data: client } = await supabase.from("clients").select("name, email").eq("id", clientId).maybeSingle();
+  if (client && email === client.email.toLowerCase()) {
+    throw new Error("That's already the primary contact");
+  }
+
+  // Insert the membership first so the new-user trigger can resolve their client.
+  const { error } = await supabase.from("client_members").insert({ client_id: clientId, email });
+  if (error) throw new Error(error.code === "23505" ? "That email already has access" : error.message);
+
+  // Pre-create a confirmed auth user so they get an OTP code (not a signup email).
+  try {
+    const admin = createAdminClient();
+    await admin.auth.admin.createUser({ email, email_confirm: true });
+  } catch {
+    /* may already exist; they can still request a code from /login/client */
+  }
+  // Welcome them with the same sign-in instructions (best-effort).
+  try {
+    await sendClientWelcome({ to: email, name: client?.name ?? "there" });
+  } catch {}
+
+  revalidatePath(`/clients/${clientId}`);
+}
+
+/** Remove a teammate's access and their login. */
+export async function removeClientMember(memberId: string, clientId: string) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const { data: m } = await supabase.from("client_members").select("email").eq("id", memberId).maybeSingle();
+
+  if (m?.email) {
+    try {
+      const admin = createAdminClient();
+      const { data: prof } = await admin.from("profiles").select("id").ilike("email", m.email).maybeSingle();
+      if (prof?.id) await admin.auth.admin.deleteUser(prof.id);
+    } catch {}
+  }
+  await supabase.from("client_members").delete().eq("id", memberId);
+  revalidatePath(`/clients/${clientId}`);
+}
+
 export async function updateClient(clientId: string, formData: FormData) {
   await assertAdmin();
   const supabase = await createClient();
