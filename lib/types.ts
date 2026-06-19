@@ -34,7 +34,7 @@ export type Retainer = {
   created_at: string;
 };
 
-export type VideoStatus = "not_started" | "v1" | "v2" | "final" | "completed";
+export type VideoStatus = "not_started" | "v1" | "v2" | "v3" | "final" | "completed";
 
 export type VideoRow = {
   id: string;

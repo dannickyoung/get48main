@@ -4,6 +4,7 @@ export const VIDEO_STATUSES: { value: VideoStatus; label: string }[] = [
   { value: "not_started", label: "Not started" },
   { value: "v1", label: "V1" },
   { value: "v2", label: "V2" },
+  { value: "v3", label: "V3" },
   { value: "final", label: "Final" },
   { value: "completed", label: "Completed" },
 ];
