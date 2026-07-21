@@ -1,4 +1,5 @@
 import { PaymentToggle } from "@/components/client/PaymentToggle";
+import { PaidDateEditor } from "@/components/client/PaidDateEditor";
 import { Pill } from "@/components/ui/StatusPill";
 import { money, shortDate } from "@/lib/format";
 import type { ScheduledPayment } from "@/lib/retainer/assemble";
@@ -106,9 +107,22 @@ export function PaymentsCard({
                         )}
                       </div>
                       <div className="mt-1.5 font-display text-lg font-semibold tnum">{money(p.amount)}</div>
-                      <div className="text-xs text-faint tnum">
-                        {p.status === "paid" && p.paidOn ? `paid ${shortDate(p.paidOn)}` : `due ${shortDate(p.dueDate)}`}
-                      </div>
+                      {!readOnly && p.status === "paid" && p.paidOn ? (
+                        <div className="mt-0.5">
+                          <PaidDateEditor
+                            clientId={clientId}
+                            periodIndex={p.periodIndex}
+                            periodStart={p.periodStart.toISOString().slice(0, 10)}
+                            kind={p.kind}
+                            amount={p.amount}
+                            paidOn={p.paidOn}
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-xs text-faint tnum">
+                          {p.status === "paid" && p.paidOn ? `paid ${shortDate(p.paidOn)}` : `due ${shortDate(p.dueDate)}`}
+                        </div>
+                      )}
                       {p.overageCount > 0 && p.overageCharge > 0 && (
                         <div className="mt-1 text-xs font-medium text-warn tnum">
                           incl. {p.overageCount} overage · {money(p.overageCharge)}

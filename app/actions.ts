@@ -392,6 +392,8 @@ export async function setPayment(input: {
   kind: "deposit" | "balance" | "full" | "overage";
   amount: number;
   paid: boolean;
+  /** Explicit paid date (yyyy-mm-dd); defaults to today when marking paid. */
+  paidOn?: string;
 }) {
   await assertAdmin();
   const supabase = await createClient();
@@ -406,7 +408,7 @@ export async function setPayment(input: {
         kind: input.kind,
         amount: input.amount,
         status: input.paid ? "paid" : "pending",
-        paid_on: input.paid ? today : null,
+        paid_on: input.paid ? (input.paidOn || today) : null,
       },
       { onConflict: "client_id,period_index,kind" },
     );

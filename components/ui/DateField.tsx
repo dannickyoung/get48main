@@ -27,13 +27,20 @@ export function DateField({
   defaultValue,
   required,
   className = "",
+  onChange,
 }: {
-  name: string;
+  name?: string;
   defaultValue?: string;
   required?: boolean;
   className?: string;
+  /** Called with the new yyyy-mm-dd value (or "" when cleared) on each pick. */
+  onChange?: (value: string) => void;
 }) {
   const [value, setValue] = useState(defaultValue ?? "");
+  const commit = (v: string) => {
+    setValue(v);
+    onChange?.(v);
+  };
   const [open, setOpen] = useState(false);
   const [view, setView] = useState(() => parse(defaultValue) ?? new Date());
   const ref = useRef<HTMLDivElement>(null);
@@ -60,7 +67,7 @@ export function DateField({
 
   return (
     <div className="relative" ref={ref}>
-      <input type="hidden" name={name} value={value} required={required} />
+      {name && <input type="hidden" name={name} value={value} required={required} />}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -95,7 +102,7 @@ export function DateField({
                   key={iso(day)}
                   type="button"
                   onClick={() => {
-                    setValue(iso(day));
+                    commit(iso(day));
                     setOpen(false);
                   }}
                   className={`grid h-9 place-items-center rounded-md text-sm tnum transition ${
@@ -113,12 +120,12 @@ export function DateField({
           </div>
 
           <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
-            <button type="button" onClick={() => { setValue(""); setOpen(false); }} className="text-xs font-medium text-faint hover:text-foreground">
+            <button type="button" onClick={() => { commit(""); setOpen(false); }} className="text-xs font-medium text-faint hover:text-foreground">
               Clear
             </button>
             <button
               type="button"
-              onClick={() => { const t = new Date(); setValue(iso(t)); setView(t); setOpen(false); }}
+              onClick={() => { const t = new Date(); commit(iso(t)); setView(t); setOpen(false); }}
               className="text-xs font-medium text-accent hover:text-accent-hover"
             >
               Today
