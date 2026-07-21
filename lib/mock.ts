@@ -94,6 +94,7 @@ function r(partial: Partial<Retainer> & Pick<Retainer, "start_date" | "videos_pe
     overage_rate: partial.overage_rate ?? 0,
     rollover_cap: partial.rollover_cap ?? 5,
     rollover_weeks: partial.rollover_weeks ?? 8,
+    payment_terms: partial.payment_terms ?? "split",
     status: partial.status ?? "active",
   };
 }

@@ -2,12 +2,20 @@ import { PaymentToggle } from "@/components/client/PaymentToggle";
 import { Pill } from "@/components/ui/StatusPill";
 import { money, shortDate } from "@/lib/format";
 import type { ScheduledPayment } from "@/lib/retainer/assemble";
+import type { PaymentKind, PaymentMode } from "@/lib/types";
+
+const KIND_LABEL: Record<PaymentKind, string> = {
+  deposit: "Deposit",
+  balance: "Balance",
+  full: "Upfront",
+};
 
 export function PaymentsCard({
   clientId,
   payments,
   outstanding,
   monthlyPrice,
+  paymentTerms = "split",
   readOnly,
   hideTitle = false,
   showSchedule = false,
@@ -16,6 +24,7 @@ export function PaymentsCard({
   payments: ScheduledPayment[];
   outstanding: number;
   monthlyPrice: number;
+  paymentTerms?: PaymentMode;
   readOnly: boolean;
   hideTitle?: boolean;
   showSchedule?: boolean;
@@ -42,8 +51,17 @@ export function PaymentsCard({
           {showSchedule && (
             <div className="px-5 py-4 sm:px-6">
               <p className="max-w-md text-sm text-faint">
-                50% deposit at the start of each retainer month, 50% balance at month-end
-                {monthlyPrice > 0 ? ` · ${money(monthlyPrice / 2)} each` : ""}.
+                {paymentTerms === "upfront" ? (
+                  <>
+                    Full monthly payment at the start of each retainer month
+                    {monthlyPrice > 0 ? ` · ${money(monthlyPrice)}` : ""}. Any overage is billed at month-end.
+                  </>
+                ) : (
+                  <>
+                    50% deposit at the start of each retainer month, 50% balance at month-end
+                    {monthlyPrice > 0 ? ` · ${money(monthlyPrice / 2)} each` : ""}.
+                  </>
+                )}
               </p>
             </div>
           )}
@@ -66,11 +84,11 @@ export function PaymentsCard({
               </div>
               <div className="mt-4 grid grid-cols-1 gap-x-10 gap-y-5 border-t border-border pt-4 sm:grid-cols-2">
                 {rows
-                  .sort((a, b) => (a.kind === "deposit" ? -1 : 1))
+                  .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
                   .map((p) => (
                     <div key={p.kind} className="min-w-0">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-faint">{p.kind}</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-faint">{KIND_LABEL[p.kind]}</span>
                         {readOnly ? (
                           <Pill tone={p.status === "paid" ? "good" : p.overdue ? "bad" : "muted"}>
                             {p.status === "paid" ? "Paid" : p.overdue ? "Overdue" : "Due"}

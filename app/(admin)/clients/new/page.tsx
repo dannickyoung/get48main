@@ -72,6 +72,15 @@ export default function NewClientPage() {
               </div>
             </label>
             <label className="block">
+              <span className={labelCls}>Payment terms</span>
+              <div className="mt-1.5">
+                <select name="payment_terms" defaultValue="split" className={inputCls}>
+                  <option value="split">50 / 50 split</option>
+                  <option value="upfront">100% upfront</option>
+                </select>
+              </div>
+            </label>
+            <label className="block">
               <span className={labelCls}>Rollover cap</span>
               <div className="mt-1.5">
                 <NumberField name="rollover_cap" min={0} defaultValue={5} className={inputCls} />

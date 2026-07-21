@@ -82,6 +82,10 @@ function numOr(fd: FormData, key: string, fallback: number): number {
   const v = Number(fd.get(key));
   return Number.isFinite(v) ? v : fallback;
 }
+/** Read the payment-terms mode from a form; anything but 'upfront' is 'split'. */
+function paymentTerms(fd: FormData): "split" | "upfront" {
+  return str(fd, "payment_terms") === "upfront" ? "upfront" : "split";
+}
 
 // ---------------------------------------------------------------------------
 // Clients + retainers
@@ -112,6 +116,7 @@ export async function addClient(formData: FormData) {
     overage_rate: numOr(formData, "overage_rate", 0),
     rollover_cap: numOr(formData, "rollover_cap", 5),
     rollover_weeks: numOr(formData, "rollover_weeks", 8),
+    payment_terms: paymentTerms(formData),
     status: "active",
   });
   if (rErr) throw new Error(rErr.message);
@@ -238,6 +243,7 @@ export async function updateRetainer(clientId: string, formData: FormData) {
       overage_rate: numOr(formData, "overage_rate", 0),
       rollover_cap: numOr(formData, "rollover_cap", 5),
       rollover_weeks: numOr(formData, "rollover_weeks", 8),
+      payment_terms: paymentTerms(formData),
     })
     .eq("client_id", clientId);
   if (error) throw new Error(error.message);
@@ -383,7 +389,7 @@ export async function setPayment(input: {
   clientId: string;
   periodIndex: number;
   periodStart: string;
-  kind: "deposit" | "balance";
+  kind: "deposit" | "balance" | "full";
   amount: number;
   paid: boolean;
 }) {

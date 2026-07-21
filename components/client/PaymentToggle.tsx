@@ -15,7 +15,7 @@ export function PaymentToggle({
   clientId: string;
   periodIndex: number;
   periodStart: string;
-  kind: "deposit" | "balance";
+  kind: "deposit" | "balance" | "full";
   amount: number;
   paid: boolean;
 }) {

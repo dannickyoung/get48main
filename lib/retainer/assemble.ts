@@ -142,6 +142,7 @@ function buildPaymentSchedule(
 ): ScheduledPayment[] {
   const start = parseDateOnly(retainer.start_date);
   const lastIndex = computation.current.state === "active" ? computation.current.periodIndex : -1;
+  const upfront = retainer.payment_terms === "upfront";
 
   const stored = new Map<string, Payment>();
   for (const p of payments) stored.set(`${p.period_index}:${p.kind}`, p);
@@ -150,16 +151,26 @@ function buildPaymentSchedule(
   for (let k = 0; k <= lastIndex; k++) {
     const periodStart = addMonths(start, k);
     const periodEnd = addMonths(start, k + 1);
-    const half = (priceOverrides[k] ?? Number(retainer.monthly_price)) / 2;
+    const fullPrice = priceOverrides[k] ?? Number(retainer.monthly_price);
+    const half = fullPrice / 2;
     const overageCount = overageByPeriod[k] ?? 0;
     const overageRate = (overageRateOverrides[k] ?? Number(retainer.overage_rate)) || 0;
     const overageCharge = overageCount * overageRate;
-    for (const kind of ["deposit", "balance"] as PaymentKind[]) {
-      const dueDate = kind === "deposit" ? periodStart : periodEnd;
+
+    // upfront: whole price at month start ('full'), overage (if any) at month end.
+    // split:   50% deposit at start, 50% balance + overage at end.
+    const kinds: PaymentKind[] = upfront ? ["full", "balance"] : ["deposit", "balance"];
+    for (const kind of kinds) {
+      const dueDate = kind === "balance" ? periodEnd : periodStart;
       const rec = stored.get(`${k}:${kind}`);
-      // Overage is billed on the month-end balance (not the deposit).
+      // In upfront mode the balance row exists only to carry month-end overage —
+      // skip it entirely when there's no overage and nothing recorded.
+      if (upfront && kind === "balance" && !rec && overageCharge === 0) continue;
+      // Base (pre-overage) amount for this row.
+      const base = kind === "full" ? fullPrice : kind === "deposit" ? half : upfront ? 0 : half;
+      // Overage is always billed on the month-end balance row (never the up-front half).
       const billOverage = kind === "balance" && !rec;
-      const amount = rec ? Number(rec.amount) : half + (kind === "balance" ? overageCharge : 0);
+      const amount = rec ? Number(rec.amount) : base + (kind === "balance" ? overageCharge : 0);
       const status = rec?.status === "paid" ? "paid" : "pending";
       rows.push({
         periodIndex: k,

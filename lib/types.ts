@@ -1,7 +1,9 @@
 export type Role = "admin" | "client" | "pending";
 export type RetainerStatus = "active" | "paused" | "ended";
-export type PaymentKind = "deposit" | "balance";
+export type PaymentKind = "deposit" | "balance" | "full";
 export type PaymentStatus = "pending" | "paid";
+/** How a client pays each retainer month. split = 50/50, upfront = 100% at start. */
+export type PaymentMode = "split" | "upfront";
 
 export type Client = {
   id: string;
@@ -30,6 +32,7 @@ export type Retainer = {
   overage_rate: number;
   rollover_cap: number;
   rollover_weeks: number;
+  payment_terms: PaymentMode;
   status: RetainerStatus;
   created_at: string;
 };

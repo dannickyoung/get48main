@@ -41,6 +41,7 @@ export function RetainerTermsCard({
         )}
         <Term label="Videos / month" value={videosPerMonth} />
         <Term label="Monthly price" value={money(monthlyPrice)} />
+        <Term label="Payment terms" value={retainer.payment_terms === "upfront" ? "100% upfront" : "50 / 50 split"} />
         <Term label="Overage rate" value={overageRate ? `${money(overageRate)} / video` : "—"} />
         <Term label="Rollover cap" value={`${retainer.rollover_cap} videos`} />
         <Term label="Rollover window" value={`${retainer.rollover_weeks} weeks`} />
@@ -64,6 +65,12 @@ export function RetainerTermsCard({
             </Field>
             <Field label="Monthly price">
               <NumberField name="monthly_price" min={0} defaultValue={retainer.monthly_price} className={inputCls} />
+            </Field>
+            <Field label="Payment terms">
+              <select name="payment_terms" defaultValue={retainer.payment_terms} className={inputCls}>
+                <option value="split">50 / 50 split</option>
+                <option value="upfront">100% upfront</option>
+              </select>
             </Field>
             <Field label="Overage rate / video">
               <NumberField name="overage_rate" min={0} defaultValue={retainer.overage_rate} className={inputCls} />

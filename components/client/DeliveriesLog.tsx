@@ -81,7 +81,7 @@ export function DeliveriesLog({
                     <DateField name="delivered_on" defaultValue={v.delivered_on} className={inputCls} />
                     <input type="text" name="title" defaultValue={v.title ?? ""} placeholder="Title / concept" className={inputCls} />
                     <NumberField name="quantity" min={1} defaultValue={v.quantity} className={inputCls} aria-label="Quantity" />
-                    <select name="status" defaultValue={v.status} aria-label="Status" className={`field-select ${inputCls}`}>
+                    <select key={v.status} name="status" defaultValue={v.status} aria-label="Status" className={`field-select ${inputCls}`}>
                       {VIDEO_STATUSES.map((s) => (
                         <option key={s.value} value={s.value}>
                           {s.label}

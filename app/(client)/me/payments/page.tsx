@@ -19,6 +19,7 @@ export default async function MyPaymentsPage() {
         payments={view.payments}
         outstanding={view.outstanding}
         monthlyPrice={view.retainer?.monthly_price ?? 0}
+        paymentTerms={view.retainer?.payment_terms ?? "split"}
         readOnly
         hideTitle
         showSchedule

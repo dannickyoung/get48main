@@ -66,6 +66,7 @@ export function ClientDetail({
               payments={view.payments}
               outstanding={view.outstanding}
               monthlyPrice={retainer.monthly_price}
+              paymentTerms={retainer.payment_terms}
               readOnly={readOnly}
             />
             <HistoryCard computation={computation} />
