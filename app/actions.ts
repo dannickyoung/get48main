@@ -389,7 +389,7 @@ export async function setPayment(input: {
   clientId: string;
   periodIndex: number;
   periodStart: string;
-  kind: "deposit" | "balance" | "full";
+  kind: "deposit" | "balance" | "full" | "overage";
   amount: number;
   paid: boolean;
 }) {

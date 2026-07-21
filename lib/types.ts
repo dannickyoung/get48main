@@ -1,6 +1,6 @@
 export type Role = "admin" | "client" | "pending";
 export type RetainerStatus = "active" | "paused" | "ended";
-export type PaymentKind = "deposit" | "balance" | "full";
+export type PaymentKind = "deposit" | "balance" | "full" | "overage";
 export type PaymentStatus = "pending" | "paid";
 /** How a client pays each retainer month. split = 50/50, upfront = 100% at start. */
 export type PaymentMode = "split" | "upfront";

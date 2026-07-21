@@ -15,7 +15,7 @@ export function PaymentToggle({
   clientId: string;
   periodIndex: number;
   periodStart: string;
-  kind: "deposit" | "balance" | "full";
+  kind: "deposit" | "balance" | "full" | "overage";
   amount: number;
   paid: boolean;
 }) {

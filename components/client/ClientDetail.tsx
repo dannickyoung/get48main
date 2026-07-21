@@ -65,7 +65,7 @@ export function ClientDetail({
               clientId={client.id}
               payments={view.payments}
               outstanding={view.outstanding}
-              monthlyPrice={retainer.monthly_price}
+              monthlyPrice={view.currentTerms?.monthlyPrice ?? retainer.monthly_price}
               paymentTerms={retainer.payment_terms}
               readOnly={readOnly}
             />

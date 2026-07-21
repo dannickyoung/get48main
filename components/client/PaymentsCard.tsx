@@ -8,6 +8,7 @@ const KIND_LABEL: Record<PaymentKind, string> = {
   deposit: "Deposit",
   balance: "Balance",
   full: "Upfront",
+  overage: "Overage",
 };
 
 export function PaymentsCard({

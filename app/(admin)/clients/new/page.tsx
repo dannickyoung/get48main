@@ -2,6 +2,7 @@ import Link from "next/link";
 import { addClient } from "@/app/actions";
 import { DateField } from "@/components/ui/DateField";
 import { NumberField } from "@/components/ui/NumberField";
+import { SelectField } from "@/components/ui/SelectField";
 import { todaySGTString } from "@/lib/time";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ActionForm } from "@/components/ui/ActionForm";
@@ -74,10 +75,10 @@ export default function NewClientPage() {
             <label className="block">
               <span className={labelCls}>Payment terms</span>
               <div className="mt-1.5">
-                <select name="payment_terms" defaultValue="split" className={inputCls}>
+                <SelectField name="payment_terms" defaultValue="split" className={inputCls}>
                   <option value="split">50 / 50 split</option>
                   <option value="upfront">100% upfront</option>
-                </select>
+                </SelectField>
               </div>
             </label>
             <label className="block">

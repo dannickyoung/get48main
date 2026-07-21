@@ -157,32 +157,35 @@ function buildPaymentSchedule(
     const overageRate = (overageRateOverrides[k] ?? Number(retainer.overage_rate)) || 0;
     const overageCharge = overageCount * overageRate;
 
-    // upfront: whole price at month start ('full'), overage (if any) at month end.
-    // split:   50% deposit at start, 50% balance + overage at end.
-    const kinds: PaymentKind[] = upfront ? ["full", "balance"] : ["deposit", "balance"];
+    // upfront: whole price at month start ('full'), overage (if any) at month end
+    //          ('overage'). split: 50% deposit at start, 50% balance + overage at end.
+    // Distinct kinds per mode so switching a client between modes never leaks old
+    // records (e.g. a split 'balance') into the other mode's schedule.
+    const kinds: PaymentKind[] = upfront ? ["full", "overage"] : ["deposit", "balance"];
     for (const kind of kinds) {
-      const dueDate = kind === "balance" ? periodEnd : periodStart;
+      const carriesOverage = kind === "balance" || kind === "overage";
+      const dueDate = carriesOverage ? periodEnd : periodStart;
       const rec = stored.get(`${k}:${kind}`);
-      // In upfront mode the balance row exists only to carry month-end overage —
-      // skip it entirely when there's no overage and nothing recorded.
-      if (upfront && kind === "balance" && !rec && overageCharge === 0) continue;
-      // Base (pre-overage) amount for this row.
-      const base = kind === "full" ? fullPrice : kind === "deposit" ? half : upfront ? 0 : half;
-      // Overage is always billed on the month-end balance row (never the up-front half).
-      const billOverage = kind === "balance" && !rec;
-      const amount = rec ? Number(rec.amount) : base + (kind === "balance" ? overageCharge : 0);
-      const status = rec?.status === "paid" ? "paid" : "pending";
+      // The upfront overage row exists only to bill month-end overage — skip it
+      // when there's none computed and none recorded.
+      if (kind === "overage" && !rec && overageCharge === 0) continue;
+      // Pre-overage base for this row, from the month's effective (overridable) price.
+      const base = kind === "full" ? fullPrice : kind === "overage" ? 0 : half; // deposit|balance → half
+      const paid = rec?.status === "paid";
+      // Paid rows keep their recorded amount; pending rows always follow the
+      // month's current terms (effective price + any overage).
+      const amount = paid ? Number(rec!.amount) : base + (carriesOverage ? overageCharge : 0);
       rows.push({
         periodIndex: k,
         periodStart,
         kind,
         dueDate,
         amount,
-        status,
-        paidOn: rec?.paid_on ?? null,
-        overdue: status === "pending" && dueDate < asOf,
-        overageCount: kind === "balance" ? overageCount : 0,
-        overageCharge: billOverage ? overageCharge : 0,
+        status: paid ? "paid" : "pending",
+        paidOn: paid ? rec!.paid_on : null,
+        overdue: !paid && dueDate < asOf,
+        overageCount: carriesOverage ? overageCount : 0,
+        overageCharge: carriesOverage ? overageCharge : 0,
       });
     }
   }
