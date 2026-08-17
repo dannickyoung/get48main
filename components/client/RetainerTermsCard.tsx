@@ -6,6 +6,7 @@ import { SubmitButton } from "@/components/ui/SubmitButton";
 import { ActionForm } from "@/components/ui/ActionForm";
 import { Section } from "@/components/ui/Section";
 import { money, shortDate } from "@/lib/format";
+import { additionalVideosCharge } from "@/lib/retainer/additional";
 import type { EffectiveTerms } from "@/lib/retainer/assemble";
 import type { Retainer } from "@/lib/types";
 
@@ -30,6 +31,10 @@ export function RetainerTermsCard({
   const videosPerMonth = current?.videosPerMonth ?? retainer.videos_per_month;
   const monthlyPrice = current?.monthlyPrice ?? retainer.monthly_price;
   const overageRate = current?.overageRate ?? retainer.overage_rate;
+  // Additional videos bought for the current month (on top of the set number).
+  const additional = current?.additionalVideos ?? 0;
+  const additionalCost = current?.additionalVideoCost ?? 0;
+  const additionalCharge = additionalVideosCharge(additional, additionalCost);
 
   return (
     <Section title="Retainer terms">
@@ -40,8 +45,33 @@ export function RetainerTermsCard({
         ) : (
           <Term label="Status" value={retainer.status} />
         )}
-        <Term label="Videos / month" value={videosPerMonth} />
+        <Term
+          label="Videos / month"
+          value={
+            additional > 0 ? (
+              <>
+                {videosPerMonth + additional}
+                <span className="ml-1.5 text-sm font-medium text-faint">
+                  ({videosPerMonth} + {additional} additional)
+                </span>
+              </>
+            ) : (
+              videosPerMonth
+            )
+          }
+        />
         <Term label="Monthly price" value={money(monthlyPrice)} />
+        {additional > 0 && (
+          <Term
+            label="Additional videos"
+            value={
+              <>
+                {additional} × {money(additionalCost)}
+                <span className="ml-1.5 text-sm font-medium text-faint">= {money(additionalCharge)} at month-end</span>
+              </>
+            }
+          />
+        )}
         <Term label="Payment terms" value={retainer.payment_terms === "upfront" ? "100% upfront" : "50 / 50 split"} />
         <Term label="Overage rate" value={overageRate ? `${money(overageRate)} / video` : "—"} />
         <Term label="Rollover cap" value={`${retainer.rollover_cap} videos`} />

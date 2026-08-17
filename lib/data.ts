@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { assembleClient, type ClientView } from "@/lib/retainer/assemble";
 import { todaySGT } from "@/lib/time";
-import type { Client, ClientMember, Payment, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
+import { syncInvoices } from "@/lib/invoice/issue";
+import type { Client, ClientMember, Invoice, Payment, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
 
 /** Additional people who can sign in to a client's dashboard. */
 export async function getClientMembers(clientId: string): Promise<ClientMember[]> {
@@ -18,13 +19,14 @@ export async function getClientMembers(clientId: string): Promise<ClientMember[]
 export async function getAllClientViews(): Promise<ClientView[]> {
   const supabase = await createClient();
 
-  const [{ data: clients }, { data: retainers }, { data: videos }, { data: payments }, { data: months }] =
+  const [{ data: clients }, { data: retainers }, { data: videos }, { data: payments }, { data: months }, { data: invoices }] =
     await Promise.all([
       supabase.from("clients").select("*").order("created_at", { ascending: true }),
       supabase.from("retainers").select("*"),
       supabase.from("videos").select("*"),
       supabase.from("payments").select("*"),
       supabase.from("retainer_months").select("*"),
+      supabase.from("invoices").select("*"),
     ]);
 
   const retByClient = new Map<string, Retainer>();
@@ -33,9 +35,10 @@ export async function getAllClientViews(): Promise<ClientView[]> {
   const vidByClient = groupBy((videos ?? []) as VideoRow[], (v) => v.client_id);
   const payByClient = groupBy((payments ?? []) as Payment[], (p) => p.client_id);
   const monByClient = groupBy((months ?? []) as RetainerMonth[], (m) => m.client_id);
+  const invByClient = groupBy((invoices ?? []) as Invoice[], (i) => i.client_id);
 
   const asOf = todaySGT();
-  return ((clients ?? []) as Client[]).map((c) =>
+  const views = ((clients ?? []) as Client[]).map((c) =>
     assembleClient(
       c,
       retByClient.get(c.id) ?? null,
@@ -43,8 +46,12 @@ export async function getAllClientViews(): Promise<ClientView[]> {
       payByClient.get(c.id) ?? [],
       asOf,
       monByClient.get(c.id) ?? [],
+      invByClient.get(c.id) ?? [],
     ),
   );
+  // Every started billing month gets an invoice automatically.
+  await syncInvoices(views);
+  return views;
 }
 
 /** A single client, fully assembled. Returns null if not visible to the caller. */
@@ -54,21 +61,26 @@ export async function getClientView(clientId: string): Promise<ClientView | null
   const { data: client } = await supabase.from("clients").select("*").eq("id", clientId).maybeSingle();
   if (!client) return null;
 
-  const [{ data: retainer }, { data: videos }, { data: payments }, { data: months }] = await Promise.all([
+  const [{ data: retainer }, { data: videos }, { data: payments }, { data: months }, { data: invoices }] = await Promise.all([
     supabase.from("retainers").select("*").eq("client_id", clientId).maybeSingle(),
     supabase.from("videos").select("*").eq("client_id", clientId).order("delivered_on", { ascending: false }),
     supabase.from("payments").select("*").eq("client_id", clientId),
     supabase.from("retainer_months").select("*").eq("client_id", clientId),
+    supabase.from("invoices").select("*").eq("client_id", clientId),
   ]);
 
-  return assembleClient(
+  const view = assembleClient(
     client as Client,
     (retainer as Retainer) ?? null,
     (videos ?? []) as VideoRow[],
     (payments ?? []) as Payment[],
     todaySGT(),
     (months ?? []) as RetainerMonth[],
+    (invoices ?? []) as Invoice[],
   );
+  // Every started billing month gets an invoice automatically.
+  await syncInvoices([view]);
+  return view;
 }
 
 function groupBy<T, K>(rows: T[], key: (row: T) => K): Map<K, T[]> {

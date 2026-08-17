@@ -54,7 +54,7 @@ export function ClientDetail({
       ) : (
         <>
           <div className="grid gap-6 lg:grid-cols-2">
-            <ThisMonthCard computation={computation} />
+            <ThisMonthCard computation={computation} additional={view.currentTerms?.additionalVideos ?? 0} />
             <RolloverHero computation={computation} />
           </div>
 
@@ -68,11 +68,14 @@ export function ClientDetail({
               monthlyPrice={view.currentTerms?.monthlyPrice ?? retainer.monthly_price}
               paymentTerms={retainer.payment_terms}
               readOnly={readOnly}
+              invoices={view.invoices}
             />
             <HistoryCard computation={computation} />
           </div>
 
-          <DeliveriesLog clientId={client.id} videos={view.videos} readOnly={readOnly} />
+          <div id="deliveries" className="scroll-mt-6">
+            <DeliveriesLog clientId={client.id} videos={view.videos} readOnly={readOnly} />
+          </div>
 
           <RetainerTermsCard
             retainer={retainer}

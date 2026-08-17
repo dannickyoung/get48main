@@ -69,6 +69,20 @@ export type RetainerMonth = {
   videos_per_month: number | null;
   monthly_price: number | null;
   overage_rate: number | null;
+  /** Extra videos added on top of this month's set allotment (0 = none). */
+  additional_videos: number;
+  /** Price per additional video, 0–1000. Billed as quantity × cost at month-end. */
+  additional_video_cost: number;
+  created_at: string;
+};
+
+/** A month's invoice record. Amounts are derived live; only number + date are stored. */
+export type Invoice = {
+  id: string;
+  client_id: string;
+  period_index: number;
+  invoice_no: string;
+  issue_date: string;
   created_at: string;
 };
 

@@ -5,7 +5,7 @@
  */
 import { addMonths } from "date-fns";
 import { computeRetainer, parseDateOnly, type Delivery, type RetainerComputation } from "./engine";
-import type { Client, Payment, PaymentKind, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
+import type { Client, Invoice, Payment, PaymentKind, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
 
 export type ScheduledPayment = {
   periodIndex: number;
@@ -17,9 +17,12 @@ export type ScheduledPayment = {
   status: "pending" | "paid";
   paidOn: string | null;
   overdue: boolean;
-  /** Overage videos billed on this row (balance only) and their charge. */
+  /** Overage videos billed on this row (month-end rows only) and their charge. */
   overageCount: number;
   overageCharge: number;
+  /** Additional (purchased) videos billed on this row (month-end rows only) and their charge. */
+  additionalCount: number;
+  additionalCharge: number;
 };
 
 export type HealthStatus =
@@ -32,10 +35,18 @@ export type HealthStatus =
   | "no_retainer";
 
 export type EffectiveTerms = {
+  /** The month's set allotment (retainer default or the month's override) — excludes additional videos. */
   videosPerMonth: number;
   monthlyPrice: number;
   overageRate: number;
+  /** Extra videos added to this month on top of videosPerMonth. */
+  additionalVideos: number;
+  /** Price per additional video (0–1000). */
+  additionalVideoCost: number;
 };
+
+/** Additional videos bought for one billing month. */
+export type AdditionalVideos = { count: number; costPerVideo: number };
 
 export type ClientView = {
   client: Client;
@@ -44,6 +55,8 @@ export type ClientView = {
   payments: ScheduledPayment[];
   videos: VideoRow[];
   months: RetainerMonth[];
+  /** Issued invoices, one per billing month (number + issue date). */
+  invoices: Invoice[];
   /** The current billing month's effective terms (base merged with its override). */
   currentTerms: EffectiveTerms | null;
   outstanding: number;
@@ -57,9 +70,10 @@ export function assembleClient(
   payments: Payment[],
   asOf: Date = new Date(),
   months: RetainerMonth[] = [],
+  invoices: Invoice[] = [],
 ): ClientView {
   if (!retainer) {
-    return { client, retainer: null, computation: null, payments: [], videos, months, currentTerms: null, outstanding: 0, health: "no_retainer" };
+    return { client, retainer: null, computation: null, payments: [], videos, months, invoices, currentTerms: null, outstanding: 0, health: "no_retainer" };
   }
 
   const deliveries: Delivery[] = videos.map((v) => ({
@@ -69,14 +83,28 @@ export function assembleClient(
     title: v.title,
   }));
 
-  // Per-month overrides for allotment (engine), price + overage rate (payments).
+  // Per-month overrides for allotment (engine), price + overage rate (payments),
+  // plus any additional videos bought for a month (allotment + billing).
   const videoOverrides: Record<number, number> = {};
   const priceOverrides: Record<number, number> = {};
   const overageRateOverrides: Record<number, number> = {};
+  const additionalByPeriod: Record<number, AdditionalVideos> = {};
   for (const m of months) {
     if (m.videos_per_month != null) videoOverrides[m.period_index] = m.videos_per_month;
     if (m.monthly_price != null) priceOverrides[m.period_index] = Number(m.monthly_price);
     if (m.overage_rate != null) overageRateOverrides[m.period_index] = Number(m.overage_rate);
+    const extra = Math.max(0, Math.floor(Number(m.additional_videos ?? 0)));
+    if (extra > 0) {
+      additionalByPeriod[m.period_index] = { count: extra, costPerVideo: Number(m.additional_video_cost ?? 0) };
+    }
+  }
+
+  // The engine sees one allotment per month: the set number (override or
+  // default) plus any additional videos bought for that month.
+  const engineAllotments: Record<number, number> = { ...videoOverrides };
+  for (const [k, a] of Object.entries(additionalByPeriod)) {
+    const idx = Number(k);
+    engineAllotments[idx] = (videoOverrides[idx] ?? retainer.videos_per_month) + a.count;
   }
 
   const computation = computeRetainer(
@@ -85,7 +113,7 @@ export function assembleClient(
       videosPerMonth: retainer.videos_per_month,
       rolloverCap: retainer.rollover_cap,
       rolloverWeeks: retainer.rollover_weeks,
-      monthlyVideos: videoOverrides,
+      monthlyVideos: engineAllotments,
     },
     deliveries,
     asOf,
@@ -106,6 +134,7 @@ export function assembleClient(
     priceOverrides,
     overageByPeriod,
     overageRateOverrides,
+    additionalByPeriod,
   );
   const outstanding = schedule.filter((p) => p.status === "pending").reduce((s, p) => s + p.amount, 0);
 
@@ -116,6 +145,8 @@ export function assembleClient(
     videosPerMonth: videoOverrides[ci] ?? retainer.videos_per_month,
     monthlyPrice: priceOverrides[ci] ?? Number(retainer.monthly_price),
     overageRate: overageRateOverrides[ci] ?? Number(retainer.overage_rate),
+    additionalVideos: additionalByPeriod[ci]?.count ?? 0,
+    additionalVideoCost: additionalByPeriod[ci]?.costPerVideo ?? 0,
   };
 
   return {
@@ -125,6 +156,7 @@ export function assembleClient(
     payments: schedule,
     videos,
     months,
+    invoices,
     currentTerms,
     outstanding,
     health: deriveHealth(retainer, computation, schedule),
@@ -139,6 +171,7 @@ function buildPaymentSchedule(
   priceOverrides: Record<number, number> = {},
   overageByPeriod: Record<number, number> = {},
   overageRateOverrides: Record<number, number> = {},
+  additionalByPeriod: Record<number, AdditionalVideos> = {},
 ): ScheduledPayment[] {
   const start = parseDateOnly(retainer.start_date);
   const lastIndex = computation.current.state === "active" ? computation.current.periodIndex : -1;
@@ -156,9 +189,14 @@ function buildPaymentSchedule(
     const overageCount = overageByPeriod[k] ?? 0;
     const overageRate = (overageRateOverrides[k] ?? Number(retainer.overage_rate)) || 0;
     const overageCharge = overageCount * overageRate;
+    const additionalCount = additionalByPeriod[k]?.count ?? 0;
+    const additionalCharge = additionalCount * (additionalByPeriod[k]?.costPerVideo ?? 0);
+    // Everything billed at month-end on top of the base price.
+    const extrasCharge = overageCharge + additionalCharge;
 
-    // upfront: whole price at month start ('full'), overage (if any) at month end
-    //          ('overage'). split: 50% deposit at start, 50% balance + overage at end.
+    // upfront: whole price at month start ('full'), overage + additional videos
+    //          (if any) at month end ('overage'). split: 50% deposit at start,
+    //          50% balance + overage + additional videos at end.
     // Distinct kinds per mode so switching a client between modes never leaks old
     // records (e.g. a split 'balance') into the other mode's schedule.
     const kinds: PaymentKind[] = upfront ? ["full", "overage"] : ["deposit", "balance"];
@@ -166,15 +204,15 @@ function buildPaymentSchedule(
       const carriesOverage = kind === "balance" || kind === "overage";
       const dueDate = carriesOverage ? periodEnd : periodStart;
       const rec = stored.get(`${k}:${kind}`);
-      // The upfront overage row exists only to bill month-end overage — skip it
-      // when there's none computed and none recorded.
-      if (kind === "overage" && !rec && overageCharge === 0) continue;
+      // The upfront overage row exists only to bill month-end extras (overage +
+      // additional videos) — skip it when there's none computed and none recorded.
+      if (kind === "overage" && !rec && extrasCharge === 0) continue;
       // Pre-overage base for this row, from the month's effective (overridable) price.
       const base = kind === "full" ? fullPrice : kind === "overage" ? 0 : half; // deposit|balance → half
       const paid = rec?.status === "paid";
       // Paid rows keep their recorded amount; pending rows always follow the
       // month's current terms (effective price + any overage).
-      const amount = paid ? Number(rec!.amount) : base + (carriesOverage ? overageCharge : 0);
+      const amount = paid ? Number(rec!.amount) : base + (carriesOverage ? extrasCharge : 0);
       rows.push({
         periodIndex: k,
         periodStart,
@@ -186,6 +224,8 @@ function buildPaymentSchedule(
         overdue: !paid && dueDate < asOf,
         overageCount: carriesOverage ? overageCount : 0,
         overageCharge: carriesOverage ? overageCharge : 0,
+        additionalCount: carriesOverage ? additionalCount : 0,
+        additionalCharge: carriesOverage ? additionalCharge : 0,
       });
     }
   }

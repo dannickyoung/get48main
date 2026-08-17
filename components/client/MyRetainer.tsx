@@ -21,7 +21,7 @@ export function MyRetainer({ view }: { view: ClientView }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-2">
-        <ThisMonthCard computation={computation} />
+        <ThisMonthCard computation={computation} additional={view.currentTerms?.additionalVideos ?? 0} />
         <RolloverHero computation={computation} />
       </div>
       <UtilizationTrend computation={computation} />

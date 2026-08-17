@@ -3,7 +3,7 @@
  * the preview is a faithful render — only the data is fabricated.
  */
 import { assembleClient, type ClientView } from "@/lib/retainer/assemble";
-import type { Client, Payment, Retainer, VideoRow } from "@/lib/types";
+import type { Client, Payment, Retainer, RetainerMonth, VideoRow } from "@/lib/types";
 
 const PREVIEW_ASOF = new Date(2026, 5, 13); // 13 Jun 2026, matches the build's "today"
 
@@ -17,6 +17,10 @@ type Spec = {
   videos: { delivered_on: string; quantity?: number; title?: string }[];
   /** period indices whose deposit+balance are paid; omit for "behind". */
   paidPeriods?: number[];
+  /** period indices where only the deposit is paid (balance still pending). */
+  paidDeposits?: number[];
+  /** Per-month overrides / additional videos (see retainer_months). */
+  months?: (Partial<Omit<RetainerMonth, "id" | "client_id" | "created_at">> & Pick<RetainerMonth, "period_index">)[];
 };
 
 // Dates are explicit so every client lands in a clearly-different state as of
@@ -37,7 +41,11 @@ const SPECS: Spec[] = [
       on(["2026-05-05", "2026-05-10", "2026-05-15", "2026-05-20", "2026-05-25", "2026-05-30"], "Roastery tour"),
       on(["2026-06-04", "2026-06-08", "2026-06-11"], "Father's Day promo"),
     ),
-    paidPeriods: [0, 1, 2, 3, 4],
+    paidPeriods: [0, 1, 2, 3],
+    paidDeposits: [4],
+    // Bought 2 additional videos for the current month (Jun) at $350 each →
+    // allotment 10, and $700 lands on June's (still pending) balance.
+    months: [{ period_index: 4, additional_videos: 2, additional_video_cost: 350 }],
   },
   {
     // Over allotment this month (9 delivered against 6).
@@ -137,19 +145,33 @@ function specToView(spec: Spec): ClientView {
   }));
 
   const half = spec.retainer.monthly_price / 2;
-  const payments: Payment[] = (spec.paidPeriods ?? []).flatMap((k) =>
-    (["deposit", "balance"] as const).map((kind) => ({
-      id: `${spec.id}-p${k}-${kind}`,
-      client_id: spec.id,
-      period_index: k,
-      period_start: spec.retainer.start_date,
-      kind,
-      amount: half,
-      status: "paid" as const,
-      paid_on: spec.retainer.start_date,
-      created_at: spec.retainer.start_date,
-    })),
-  );
+  const paidRow = (k: number, kind: "deposit" | "balance"): Payment => ({
+    id: `${spec.id}-p${k}-${kind}`,
+    client_id: spec.id,
+    period_index: k,
+    period_start: spec.retainer.start_date,
+    kind,
+    amount: half,
+    status: "paid" as const,
+    paid_on: spec.retainer.start_date,
+    created_at: spec.retainer.start_date,
+  });
+  const payments: Payment[] = [
+    ...(spec.paidPeriods ?? []).flatMap((k) => [paidRow(k, "deposit"), paidRow(k, "balance")]),
+    ...(spec.paidDeposits ?? []).map((k) => paidRow(k, "deposit")),
+  ];
 
-  return assembleClient(client, retainer, videos, payments, PREVIEW_ASOF);
+  const months: RetainerMonth[] = (spec.months ?? []).map((m, i) => ({
+    id: `${spec.id}-m${i}`,
+    client_id: spec.id,
+    created_at: "2026-01-01",
+    videos_per_month: null,
+    monthly_price: null,
+    overage_rate: null,
+    additional_videos: 0,
+    additional_video_cost: 0,
+    ...m,
+  }));
+
+  return assembleClient(client, retainer, videos, payments, PREVIEW_ASOF, months);
 }

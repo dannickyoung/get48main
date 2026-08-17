@@ -6,6 +6,7 @@ const NAV: NavItem[] = [
   { href: "/clients", label: "Clients", icon: "clients" },
   { href: "/archived", label: "Archived", icon: "archived" },
   { href: "/payments", label: "Payments", icon: "payments" },
+  { href: "/invoices", label: "Invoices", icon: "invoices" },
   { href: "/rollovers", label: "Rollovers", icon: "rollovers" },
   { href: "/deliveries", label: "Deliveries", icon: "deliveries" },
   { href: "/trends", label: "Trends", icon: "trends" },

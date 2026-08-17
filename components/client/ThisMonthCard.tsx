@@ -5,7 +5,14 @@ import { Section } from "@/components/ui/Section";
 import type { RetainerComputation } from "@/lib/retainer/engine";
 import { shortDate } from "@/lib/format";
 
-export function ThisMonthCard({ computation }: { computation: RetainerComputation }) {
+export function ThisMonthCard({
+  computation,
+  additional = 0,
+}: {
+  computation: RetainerComputation;
+  /** Additional videos bought for this month (already included in the allotment). */
+  additional?: number;
+}) {
   const { current } = computation;
   // Videos left this month = unused allotment + rollover still available to use.
   const remaining = current.freshRemaining + current.rollover.available;
@@ -29,7 +36,15 @@ export function ThisMonthCard({ computation }: { computation: RetainerComputatio
             <Pill tone="good">+{current.usedFromRollover} from rollover</Pill>
           )}
         </div>
-        <div className="mt-1.5 text-sm text-muted">videos used from this month&apos;s allotment</div>
+        <div className="mt-1.5 text-sm text-muted">
+          videos used from this month&apos;s allotment
+          {additional > 0 && (
+            <span className="text-faint tnum">
+              {" "}
+              · incl. {additional} additional
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="mt-5">

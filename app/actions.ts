@@ -7,6 +7,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getProfile } from "@/lib/auth";
 import { todaySGTString } from "@/lib/time";
 import { toVideoStatus } from "@/lib/video-status";
+import { ADDITIONAL_VIDEO_COST_MAX, ADDITIONAL_VIDEO_COST_MIN, isValidAdditionalVideoCost } from "@/lib/retainer/additional";
+import { ensureInvoice as ensureInvoiceWith } from "@/lib/invoice/issue";
 import {
   sendClientWelcome,
   sendRetainerPaused,
@@ -205,7 +207,12 @@ export async function updateClient(clientId: string, formData: FormData) {
   revalidatePath(`/clients/${clientId}`);
 }
 
-/** Override one billing month's videos/price (blank field = use retainer default). */
+/**
+ * Override one billing month's videos/price (blank field = use retainer default),
+ * and set that month's additional videos (quantity + cost per video, $0–$1000).
+ * Additional videos raise the month's allotment and are billed quantity × cost
+ * on the month-end payment row.
+ */
 export async function setMonthTerms(clientId: string, periodIndex: number, formData: FormData) {
   await assertAdmin();
   const supabase = await createClient();
@@ -216,13 +223,35 @@ export async function setMonthTerms(clientId: string, periodIndex: number, formD
   const monthly_price = pRaw === "" ? null : Math.max(0, Number(pRaw));
   const overage_rate = oRaw === "" ? null : Math.max(0, Number(oRaw));
 
-  if (videos_per_month === null && monthly_price === null && overage_rate === null) {
+  // Additional videos: whole quantity ≥ 0; cost per video within [0, 1000].
+  const aRaw = str(formData, "additional_videos");
+  const cRaw = str(formData, "additional_video_cost");
+  const additional_videos = aRaw === "" ? 0 : Math.floor(Number(aRaw));
+  if (!Number.isFinite(additional_videos) || additional_videos < 0) {
+    throw new Error("Additional videos must be 0 or more");
+  }
+  const additional_video_cost = cRaw === "" ? 0 : Number(cRaw);
+  if (!isValidAdditionalVideoCost(additional_video_cost)) {
+    throw new Error(`Cost per additional video must be between $${ADDITIONAL_VIDEO_COST_MIN} and $${ADDITIONAL_VIDEO_COST_MAX}`);
+  }
+
+  const nothingCustom =
+    videos_per_month === null && monthly_price === null && overage_rate === null && additional_videos === 0;
+  if (nothingCustom) {
     await supabase.from("retainer_months").delete().eq("client_id", clientId).eq("period_index", periodIndex);
   } else {
     const { error } = await supabase
       .from("retainer_months")
       .upsert(
-        { client_id: clientId, period_index: periodIndex, videos_per_month, monthly_price, overage_rate },
+        {
+          client_id: clientId,
+          period_index: periodIndex,
+          videos_per_month,
+          monthly_price,
+          overage_rate,
+          additional_videos,
+          additional_video_cost,
+        },
         { onConflict: "client_id,period_index" },
       );
     if (error) throw new Error(error.message);
@@ -373,6 +402,17 @@ export async function updateDelivery(videoId: string, clientId: string, formData
   revalidatePath("/admin");
 }
 
+/** Quick status change from the Deliveries board (V1 → V2 → … → Completed). */
+export async function setDeliveryStatus(videoId: string, clientId: string, status: string) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase.from("videos").update({ status: toVideoStatus(status) }).eq("id", videoId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/clients/${clientId}`);
+  revalidatePath("/deliveries");
+  revalidatePath("/admin");
+}
+
 export async function deleteDelivery(videoId: string, clientId: string) {
   await assertAdmin();
   const supabase = await createClient();
@@ -380,6 +420,39 @@ export async function deleteDelivery(videoId: string, clientId: string) {
   revalidatePath(`/clients/${clientId}`);
   revalidatePath("/deliveries");
   revalidatePath("/admin");
+}
+
+// ---------------------------------------------------------------------------
+// Invoices — one per client per billing month. Only the number + issue date
+// are stored; the PDF is rendered from live data at /api/invoices/[id].
+// ---------------------------------------------------------------------------
+
+/** Find this month's invoice, or create it (issued today) with the next free number. */
+async function ensureInvoice(clientId: string, periodIndex: number) {
+  const supabase = await createClient();
+  return ensureInvoiceWith(supabase, clientId, periodIndex, todaySGTString());
+}
+
+/** Admin: issue the invoice for a billing month (no-op if it already exists). */
+export async function createInvoice(clientId: string, periodIndex: number) {
+  await assertAdmin();
+  await ensureInvoice(clientId, periodIndex);
+  revalidatePath(`/clients/${clientId}`);
+  revalidatePath("/invoices");
+}
+
+/** Admin: correct an invoice's number or issue date. */
+export async function updateInvoice(invoiceId: string, clientId: string, formData: FormData) {
+  await assertAdmin();
+  const supabase = await createClient();
+  const invoice_no = str(formData, "invoice_no").toUpperCase();
+  const issue_date = str(formData, "issue_date");
+  if (!invoice_no) throw new Error("Enter an invoice number");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(issue_date)) throw new Error("Enter a valid issue date");
+  const { error } = await supabase.from("invoices").update({ invoice_no, issue_date }).eq("id", invoiceId);
+  if (error) throw new Error(error.code === "23505" ? "That invoice number is already used" : error.message);
+  revalidatePath(`/clients/${clientId}`);
+  revalidatePath("/invoices");
 }
 
 // ---------------------------------------------------------------------------
@@ -413,6 +486,16 @@ export async function setPayment(input: {
       { onConflict: "client_id,period_index,kind" },
     );
   if (error) throw new Error(error.message);
+  // Marking anything paid guarantees the month has an invoice, so the client
+  // can download their (paid) copy right away.
+  if (input.paid) {
+    try {
+      await ensureInvoice(input.clientId, input.periodIndex);
+    } catch {
+      /* invoice creation is best-effort here; the payment itself is recorded */
+    }
+  }
   revalidatePath(`/clients/${input.clientId}`);
   revalidatePath("/admin");
+  revalidatePath("/invoices");
 }
