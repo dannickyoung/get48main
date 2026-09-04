@@ -42,7 +42,6 @@ export const REEL_TIERS: ReelTier[] = [
     accent: "orange",
     reels: [
       reel("guilds-zenith", "Guilds", "Zenith standing desk", 24),
-      reel("imperial-reel", "Imperial Harvest", "4 signs", 66),
       reel("world-cup-roulette", "Camel", "World Cup roulette", 35),
     ],
   },
@@ -51,7 +50,10 @@ export const REEL_TIERS: ReelTier[] = [
     index: "03",
     name: "Premium Reel",
     accent: "green",
-    reels: [reel("vici-x-calent", "Calent", "They applied", 25)],
+    reels: [
+      reel("vici-x-calent", "Calent", "They applied", 25),
+      reel("imperial-reel", "Imperial Harvest", "4 signs", 66),
+    ],
   },
 ];
 
