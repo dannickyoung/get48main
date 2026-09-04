@@ -4,11 +4,17 @@ import { requireClient } from "@/lib/auth";
 import { getClientView } from "@/lib/data";
 import { todaySGT } from "@/lib/time";
 import { parseDateOnly } from "@/lib/retainer/engine";
+import { periodIndexFor, periodLabel, periodRange } from "@/lib/retainer/periods";
 import { Stat } from "@/components/ui/Stat";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterBar } from "@/components/admin/FilterBar";
-import { DeliveriesBoard, deliveryMonthKey } from "@/components/admin/DeliveriesBoard";
+import { DeliveriesBoard, calendarMonthGrouping, type DeliveryGrouping } from "@/components/admin/DeliveriesBoard";
 import type { DeliveryWithClient } from "@/lib/aggregate";
+
+// Period indexes are offset so negative/positive indexes sort as strings.
+const OFFSET = 100000;
+const periodKey = (k: number) => String(k + OFFSET).padStart(6, "0");
+const periodFromKey = (key: string) => Number(key) - OFFSET;
 
 type Search = { view?: string; month?: string };
 const DONE = new Set(["final", "completed"]);
@@ -24,28 +30,39 @@ export default async function MyDeliveriesPage({ searchParams }: { searchParams:
 
   const all: DeliveryWithClient[] = v.videos.map((d) => ({ ...d, clientName: v.client.name })).sort((a, b) => (a.delivered_on < b.delivered_on ? 1 : -1));
   const today = todaySGT();
-  const thisMonth = format(today, "yyyy-MM");
   const qty = (rows: DeliveryWithClient[]) => rows.reduce((s, d) => s + d.quantity, 0);
   const inProduction = all.filter((d) => !DONE.has(d.status));
   const cur = v.computation?.current;
 
-  const months = [...new Set(all.map(deliveryMonthKey))]
+  // Group by retainer month (anchored on the retainer's start day); fall back
+  // to calendar months if the client somehow has videos but no retainer.
+  const anchor = v.retainer ? parseDateOnly(v.retainer.start_date) : null;
+  const grouping: DeliveryGrouping = anchor
+    ? {
+        key: (d) => periodKey(periodIndexFor(anchor, parseDateOnly(d.delivered_on))),
+        label: (k) => periodLabel(anchor, periodFromKey(k)),
+        detail: (k) => periodRange(anchor, periodFromKey(k)),
+      }
+    : calendarMonthGrouping;
+  const thisMonth = anchor ? periodKey(periodIndexFor(anchor, today)) : format(today, "yyyy-MM");
+
+  const months = [...new Set(all.map(grouping.key))]
     .sort((a, b) => (a < b ? 1 : -1))
-    .map((k) => ({ value: k, label: format(parseDateOnly(`${k}-01`), "MMMM yyyy") }));
+    .map((k) => ({ value: k, label: grouping.label(k) }));
 
   const rows = all.filter(
     (d) =>
       (view === "all" || (view === "done" ? DONE.has(d.status) : !DONE.has(d.status))) &&
-      (!monthFilter || deliveryMonthKey(d) === monthFilter),
+      (!monthFilter || grouping.key(d) === monthFilter),
   );
-  const openKeys = new Set<string>(monthFilter ? [monthFilter] : [thisMonth, ...(rows[0] ? [deliveryMonthKey(rows[0])] : [])]);
-  if (view === "production") for (const d of rows) openKeys.add(deliveryMonthKey(d));
+  const openKeys = new Set<string>(monthFilter ? [monthFilter] : [thisMonth, ...(rows[0] ? [grouping.key(rows[0])] : [])]);
+  if (view === "production") for (const d of rows) openKeys.add(grouping.key(d));
 
   return (
     <div className="rise space-y-6">
       <div>
         <h1 className="font-display text-3xl font-semibold tracking-tight">Deliveries</h1>
-        <p className="mt-1.5 text-[15px] text-muted">Every video on your retainer, month by month — and where each one is in production.</p>
+        <p className="mt-1.5 text-[15px] text-muted">Every video on your retainer, retainer month by retainer month — and where each one is in production.</p>
       </div>
 
       {all.length === 0 ? (
@@ -80,7 +97,7 @@ export default async function MyDeliveriesPage({ searchParams }: { searchParams:
             />
           </Suspense>
 
-          <DeliveriesBoard deliveries={rows} openKeys={openKeys} readOnly />
+          <DeliveriesBoard deliveries={rows} openKeys={openKeys} readOnly grouping={grouping} />
         </>
       )}
     </div>

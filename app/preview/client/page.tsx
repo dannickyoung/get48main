@@ -34,7 +34,7 @@ export default function PreviewClient() {
         readOnly
       />
 
-      <DeliveriesLog clientId={view.client.id} videos={view.videos} readOnly />
+      <DeliveriesLog clientId={view.client.id} videos={view.videos} readOnly retainerStart={view.retainer?.start_date} />
     </div>
   );
 }

@@ -11,23 +11,41 @@ import type { DeliveryWithClient } from "@/lib/aggregate";
 export const deliveryMonthKey = (d: DeliveryWithClient) => d.delivered_on.slice(0, 7);
 const DONE = new Set(["final", "completed"]);
 
+export type DeliveryGrouping = {
+  /** Group key for a delivery — must sort chronologically as a string. */
+  key: (d: DeliveryWithClient) => string;
+  /** Group heading, e.g. "Jul – Aug 2026". */
+  label: (key: string) => string;
+  /** Optional lead-in for the summary line, e.g. the exact date range. */
+  detail?: (key: string) => string | null;
+};
+
+/** Default grouping: calendar months. */
+export const calendarMonthGrouping: DeliveryGrouping = {
+  key: deliveryMonthKey,
+  label: (k) => format(parseDateOnly(`${k}-01`), "MMMM yyyy"),
+};
+
 /**
- * Deliveries grouped by calendar month, newest first. Each month is a
- * collapsible card with a production summary; the current month starts open.
+ * Deliveries grouped by month, newest first — calendar months by default, or
+ * a caller-supplied grouping (e.g. a client's retainer months). Each month is
+ * a collapsible card with a production summary; the current month starts open.
  */
 export function DeliveriesBoard({
   deliveries,
   openKeys,
   readOnly = false,
+  grouping = calendarMonthGrouping,
 }: {
   deliveries: DeliveryWithClient[];
   openKeys: Set<string>;
   /** Client view: static status badges, no client name, no edit link. */
   readOnly?: boolean;
+  grouping?: DeliveryGrouping;
 }) {
   const groups = new Map<string, DeliveryWithClient[]>();
   for (const d of deliveries) {
-    const k = deliveryMonthKey(d);
+    const k = grouping.key(d);
     (groups.get(k) ?? groups.set(k, []).get(k)!).push(d);
   }
   const keys = [...groups.keys()].sort((a, b) => (a < b ? 1 : -1));
@@ -48,12 +66,13 @@ export function DeliveriesBoard({
         const done = list.filter((d) => DONE.has(d.status)).reduce((s, d) => s + d.quantity, 0);
         const inProd = videos - done;
         const clients = new Set(list.map((d) => d.client_id)).size;
+        const detail = grouping.detail?.(k);
         return (
           <MonthGroup
             key={k}
-            title={format(parseDateOnly(`${k}-01`), "MMMM yyyy")}
+            title={grouping.label(k)}
             open={openKeys.has(k)}
-            summary={`${videos} ${videos === 1 ? "video" : "videos"} · ${list.length} ${list.length === 1 ? "delivery" : "deliveries"}${readOnly ? "" : ` · ${clients} ${clients === 1 ? "client" : "clients"}`}`}
+            summary={`${detail ? `${detail} · ` : ""}${videos} ${videos === 1 ? "video" : "videos"} · ${list.length} ${list.length === 1 ? "delivery" : "deliveries"}${readOnly ? "" : ` · ${clients} ${clients === 1 ? "client" : "clients"}`}`}
             aside={
               <>
                 {inProd > 0 && (

@@ -3,6 +3,7 @@ import { assembleClient } from "../lib/retainer/assemble";
 import { additionalVideosCharge, isValidAdditionalVideoCost } from "../lib/retainer/additional";
 import { buildInvoice } from "../lib/invoice/build";
 import { invoiceMoney } from "../lib/invoice/config";
+import { periodIndexFor, periodLabel, periodRange, periodIndexForDate } from "../lib/retainer/periods";
 import type { Client, Invoice, Payment, Retainer, RetainerMonth, VideoRow } from "../lib/types";
 
 let pass = 0;
@@ -189,6 +190,25 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
 
   // Month not yet reached → null.
   eq("invoice: future month → null", buildInvoice(assembleClient(client, base, [], [], asOf), { ...invoice, period_index: 3 }), null);
+}
+
+
+// Retainer period helpers: grouping/labels follow the retainer's start day.
+{
+  const s = new Date(2026, 6, 15); // 15 Jul 2026
+  eq("period: start day is index 0", periodIndexFor(s, new Date(2026, 6, 15)), 0);
+  eq("period: day before next anchor is still index 0", periodIndexFor(s, new Date(2026, 7, 14)), 0);
+  eq("period: next anchor day is index 1", periodIndexFor(s, new Date(2026, 7, 15)), 1);
+  eq("period: before start is negative", periodIndexFor(s, new Date(2026, 6, 1)), -1);
+  eq("period: string form", periodIndexForDate("2026-07-15", "2026-09-03"), 1);
+  eq("period: label spans months", periodLabel(s, 0), "Jul – Aug 2026");
+  eq("period: label across year", periodLabel(s, 5), "Dec 2026 – Jan 2027");
+  eq("period: range", periodRange(s, 0), "15 Jul – 14 Aug 2026");
+  const first = new Date(2026, 6, 1);
+  eq("period: 1st-anchored is a calendar month", periodLabel(first, 0), "July 2026");
+  eq("period: 1st-anchored index", periodIndexFor(first, new Date(2026, 7, 31)), 1);
+  const jan31 = new Date(2026, 0, 31);
+  eq("period: month-end anchor clamps like the engine", periodIndexFor(jan31, new Date(2026, 1, 28)), 1);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

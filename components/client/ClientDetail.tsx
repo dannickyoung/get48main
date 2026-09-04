@@ -74,7 +74,7 @@ export function ClientDetail({
           </div>
 
           <div id="deliveries" className="scroll-mt-6">
-            <DeliveriesLog clientId={client.id} videos={view.videos} readOnly={readOnly} />
+            <DeliveriesLog clientId={client.id} videos={view.videos} readOnly={readOnly} retainerStart={retainer.start_date} />
           </div>
 
           <RetainerTermsCard

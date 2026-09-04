@@ -10,6 +10,7 @@ import { VideoStatusBadge } from "@/components/ui/VideoStatusBadge";
 import { DeliveryStatusSelect } from "@/components/admin/DeliveryStatusSelect";
 import { MonthGroup } from "@/components/admin/MonthGroup";
 import { parseDateOnly } from "@/lib/retainer/engine";
+import { periodIndexFor, periodLabel, periodRange } from "@/lib/retainer/periods";
 import { shortDate } from "@/lib/format";
 import { todaySGTString } from "@/lib/time";
 import { VIDEO_STATUSES } from "@/lib/video-status";
@@ -21,7 +22,10 @@ const labelCls = "text-[11px] font-semibold uppercase tracking-wider text-faint"
 const DONE = new Set(["final", "completed"]);
 
 /**
- * A client's delivered videos, grouped by calendar month (newest first).
+ * A client's delivered videos, grouped by retainer month (newest first).
+ * Billing months follow the retainer's start day — a retainer starting 15 Jul
+ * groups 15 Jul – 14 Aug as one month, labelled "Jul – Aug 2026". Without a
+ * retainer start the log falls back to calendar months.
  * The current month starts open; older months collapse to a summary line.
  * Admins get a log form on top, an inline status changer per row, and an
  * expandable editor per row.
@@ -31,20 +35,32 @@ export function DeliveriesLog({
   videos,
   readOnly,
   hideTitle = false,
+  retainerStart,
 }: {
   clientId: string;
   videos: VideoRow[];
   readOnly: boolean;
   hideTitle?: boolean;
+  /** Retainer start date ('yyyy-MM-dd') — the anchor every billing month runs from. */
+  retainerStart?: string | null;
 }) {
   const today = todaySGTString();
-  const thisMonth = today.slice(0, 7);
   const total = videos.reduce((s, v) => s + v.quantity, 0);
   const inProd = videos.filter((v) => !DONE.has(v.status)).reduce((s, v) => s + v.quantity, 0);
 
+  // Group key: the retainer period index (as a string) when we know the cycle,
+  // else the calendar month. Both sort correctly as strings once padded.
+  const anchor = retainerStart ? parseDateOnly(retainerStart) : null;
+  const keyFor = (date: string) =>
+    anchor ? String(periodIndexFor(anchor, parseDateOnly(date)) + 100000).padStart(6, "0") : date.slice(0, 7);
+  const labelFor = (k: string) =>
+    anchor ? periodLabel(anchor, Number(k) - 100000) : format(parseDateOnly(`${k}-01`), "MMMM yyyy");
+  const rangeFor = (k: string) => (anchor ? periodRange(anchor, Number(k) - 100000) : null);
+  const currentKey = keyFor(today);
+
   const groups = new Map<string, VideoRow[]>();
   for (const v of videos) {
-    const k = v.delivered_on.slice(0, 7);
+    const k = keyFor(v.delivered_on);
     (groups.get(k) ?? groups.set(k, []).get(k)!).push(v);
   }
   const keys = [...groups.keys()].sort((a, b) => (a < b ? 1 : -1));
@@ -112,12 +128,13 @@ export function DeliveriesLog({
             const list = groups.get(k)!.sort((a, b) => (a.delivered_on < b.delivered_on ? 1 : -1));
             const n = list.reduce((s, v) => s + v.quantity, 0);
             const done = list.filter((v) => DONE.has(v.status)).reduce((s, v) => s + v.quantity, 0);
+            const range = rangeFor(k);
             return (
               <MonthGroup
                 key={k}
-                title={format(parseDateOnly(`${k}-01`), "MMMM yyyy")}
-                summary={`${n} ${n === 1 ? "video" : "videos"} · ${list.length} ${list.length === 1 ? "delivery" : "deliveries"}`}
-                open={k === thisMonth || i === 0}
+                title={labelFor(k)}
+                summary={`${range ? `${range} · ` : ""}${n} ${n === 1 ? "video" : "videos"} · ${list.length} ${list.length === 1 ? "delivery" : "deliveries"}`}
+                open={k === currentKey || i === 0}
                 aside={
                   <>
                     {n - done > 0 && (
