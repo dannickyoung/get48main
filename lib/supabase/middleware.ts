@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Routes that never require auth.
-const PUBLIC_PATHS = ["/login", "/auth", "/no-access", "/preview"];
+const PUBLIC_PATHS = ["/login", "/auth", "/no-access", "/preview", "/social-media-videos"];
 
 /** Refresh the auth session on every request and gate unauthenticated traffic. */
 export async function updateSession(request: NextRequest) {
