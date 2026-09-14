@@ -46,7 +46,7 @@ export function AreaTrend({
             key={s.key}
             dataKey={s.key}
             name={s.label}
-            type="natural"
+            type="monotone"
             stackId="a"
             stroke={s.color}
             strokeWidth={2}
