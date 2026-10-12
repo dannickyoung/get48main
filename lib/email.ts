@@ -1,5 +1,6 @@
 import "server-only";
 import nodemailer from "nodemailer";
+import { shortDate } from "@/lib/format";
 
 /** Gmail SMTP transport via app password. Returns null if not configured. */
 function transport() {
@@ -59,12 +60,12 @@ export async function sendRetainerPaused({ to, name }: { to: string; name: strin
 }
 
 /** Retainer stopped/ended — warm goodbye, account stays open. */
-export async function sendRetainerStopped({ to, name }: { to: string; name: string }) {
+export async function sendRetainerStopped({ to, name, accessUntil }: { to: string; name: string; accessUntil: string }) {
   if (!emailConfigured()) return;
   const body = `
     <p style="margin:0 0 14px;">Hi ${firstName(name)},</p>
     <p style="margin:0 0 14px;">We're writing to let you know your get48 retainer has come to an end. It's been a genuine pleasure creating content with you, and we're grateful you trusted us with it.</p>
-    <p style="margin:0 0 14px;">Your account stays open, so you can still log in and look back over everything we delivered. If you'd ever like to start a new retainer down the line, we'd love to work together again. Just reach out.</p>
+    <p style="margin:0 0 14px;">Your account stays open until <strong>${shortDate(accessUntil)}</strong>, so you can log in and look back over (and download) everything we delivered. After that it will be closed and your login removed. If you'd ever like to start a new retainer down the line, we'd love to work together again. Just reach out.</p>
     <p style="margin:0;">Wishing you all the best,<br />The get48 team</p>`;
   await sendMail({ to, subject: "Your get48 retainer has ended", html: emailLayout("Thanks for working with us", body) });
 }

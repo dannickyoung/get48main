@@ -36,6 +36,8 @@ export type Retainer = {
   status: RetainerStatus;
   /** Last day of service (inclusive, 'yyyy-MM-dd'). null → open-ended. */
   end_date: string | null;
+  /** Last day (inclusive) an ended client can still sign in. null → no limit. */
+  access_until: string | null;
   created_at: string;
 };
 

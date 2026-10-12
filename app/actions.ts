@@ -10,6 +10,7 @@ import { toVideoStatus } from "@/lib/video-status";
 import { ADDITIONAL_VIDEO_COST_MAX, ADDITIONAL_VIDEO_COST_MIN, isValidAdditionalVideoCost } from "@/lib/retainer/additional";
 import { ensureInvoice as ensureInvoiceWith } from "@/lib/invoice/issue";
 import { periodIndexForDate } from "@/lib/retainer/periods";
+import { accessUntilFor } from "@/lib/retainer/access";
 import {
   sendClientWelcome,
   sendRetainerPaused,
@@ -306,6 +307,7 @@ export async function pauseRetainer(clientId: string) {
  * Stop (end) the retainer + archive the client (they can still log in). Emails them.
  * `end_date` (form field, default today) is the last day of service: no billing
  * months start after it, and invoices already issued for those months are removed.
+ * The client keeps sign-in access for CLIENT_ACCESS_DAYS from today, then is locked out.
  */
 export async function stopRetainer(clientId: string, formData?: FormData) {
   await assertAdmin();
@@ -313,9 +315,10 @@ export async function stopRetainer(clientId: string, formData?: FormData) {
   const endDate = (formData && str(formData, "end_date")) || todaySGTString();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate)) throw new Error("Invalid end date");
 
+  const accessUntil = accessUntilFor(todaySGTString());
   const { data: r } = await supabase.from("retainers").select("start_date").eq("client_id", clientId).maybeSingle();
   if (r && endDate < r.start_date) throw new Error("End date is before the retainer started");
-  const { error } = await supabase.from("retainers").update({ status: "ended", end_date: endDate }).eq("client_id", clientId);
+  const { error } = await supabase.from("retainers").update({ status: "ended", end_date: endDate, access_until: accessUntil }).eq("client_id", clientId);
   if (error) throw new Error(error.message);
   if (r) {
     const lastPeriod = periodIndexForDate(r.start_date, endDate);
@@ -325,7 +328,7 @@ export async function stopRetainer(clientId: string, formData?: FormData) {
   const { data: c } = await supabase.from("clients").select("name, email").eq("id", clientId).maybeSingle();
   if (c?.email) {
     try {
-      await sendRetainerStopped({ to: c.email, name: c.name });
+      await sendRetainerStopped({ to: c.email, name: c.name, accessUntil });
     } catch {}
   }
   await archiveRevalidate(clientId);
@@ -335,7 +338,7 @@ export async function stopRetainer(clientId: string, formData?: FormData) {
 export async function resumeRetainer(clientId: string) {
   await assertAdmin();
   const supabase = await createClient();
-  await supabase.from("retainers").update({ status: "active", end_date: null }).eq("client_id", clientId);
+  await supabase.from("retainers").update({ status: "active", end_date: null, access_until: null }).eq("client_id", clientId);
   await supabase.from("clients").update({ archived: false }).eq("id", clientId);
   const { data: c } = await supabase.from("clients").select("name, email").eq("id", clientId).maybeSingle();
   if (c?.email) {

@@ -3,6 +3,7 @@ import { getAllClientViewsAdmin } from "@/lib/data-admin";
 import { allRollovers } from "@/lib/aggregate";
 import { sendMail, emailConfigured, emailLayout } from "@/lib/email";
 import { shortDate, relativeDays } from "@/lib/format";
+import { closeExpiredClientAccounts } from "@/lib/close-accounts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,13 @@ export async function GET(request: Request) {
     const bearer = request.headers.get("authorization") === `Bearer ${secret}`;
     const keyParam = searchParams.get("key") === secret;
     if (!bearer && !keyParam) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Lock out ended retainers whose access window has passed (skipped on dry runs).
+  if (searchParams.get("dry") !== "1") {
+    try {
+      await closeExpiredClientAccounts();
+    } catch {}
   }
 
   const views = await getAllClientViewsAdmin();

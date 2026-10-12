@@ -54,7 +54,7 @@ export function AdminClientControls({ client, retainer }: { client: Client; reta
           {client.archived ? (
             <Row
               title="Reactivate retainer"
-              desc={`${ended ? `Retainer ended ${shortDate(retainer!.end_date)}. ` : ""}Set the retainer active and move the client out of Archived. Emails them a welcome back.`}
+              desc={`${ended ? `Retainer ended ${shortDate(retainer!.end_date)}. ` : ""}${retainer?.access_until ? `Client access until ${shortDate(retainer.access_until)}, then their login is deleted. ` : ""}Set the retainer active and move the client out of Archived. Emails them a welcome back.`}
             >
               <ActionForm action={resumeRetainer.bind(null, client.id)} success="Retainer reactivated, client emailed">
                 <SubmitButton
@@ -77,7 +77,7 @@ export function AdminClientControls({ client, retainer }: { client: Client; reta
                   </SubmitButton>
                 </ActionForm>
               </Row>
-              <Row title="Stop retainer" desc="End the retainer for good on the last day of service — no billing months or invoices after it. Moves the client to Archived and emails them. They can still sign in.">
+              <Row title="Stop retainer" desc="End the retainer for good on the last day of service — no billing months or invoices after it. Moves the client to Archived and emails them. They keep access for 10 days, then their login is deleted.">
                 <ActionForm action={stopRetainer.bind(null, client.id)} success="Retainer stopped, client emailed" className="flex items-center gap-2">
                   <DateField name="end_date" defaultValue={todaySGTString()} required className="w-40" />
                   <SubmitButton

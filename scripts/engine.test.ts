@@ -3,6 +3,7 @@ import { assembleClient } from "../lib/retainer/assemble";
 import { additionalVideosCharge, isValidAdditionalVideoCost } from "../lib/retainer/additional";
 import { buildInvoice } from "../lib/invoice/build";
 import { invoiceMoney } from "../lib/invoice/config";
+import { accessClosed, accessDaysLeft, accessUntilFor } from "../lib/retainer/access";
 import { periodIndexFor, periodLabel, periodRange, periodIndexForDate } from "../lib/retainer/periods";
 import type { Client, Invoice, Payment, Retainer, RetainerMonth, VideoRow } from "../lib/types";
 
@@ -75,7 +76,7 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
   const client: Client = { id: "c", name: "C", email: "c@x.io", company: null, notes: null, archived: false, created_at: "2026-01-01" };
   const base: Retainer = {
     id: "r", client_id: "c", start_date: "2026-01-01", videos_per_month: 4, monthly_price: 2000, overage_rate: 500,
-    rollover_cap: 5, rollover_weeks: 8, payment_terms: "split", status: "active", end_date: null, created_at: "2026-01-01",
+    rollover_cap: 5, rollover_weeks: 8, payment_terms: "split", status: "active", end_date: null, access_until: null, created_at: "2026-01-01",
   };
   const month = (p: Partial<RetainerMonth>): RetainerMonth => ({
     id: "m", client_id: "c", period_index: 1, videos_per_month: null, monthly_price: null, overage_rate: null,
@@ -142,7 +143,7 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
   const client: Client = { id: "c", name: "Judy Tay", email: "judy@dfrnt.sg", company: "The DFRNT Agency", notes: null, archived: false, created_at: "2026-01-01" };
   const base: Retainer = {
     id: "r", client_id: "c", start_date: "2026-06-12", videos_per_month: 15, monthly_price: 2400, overage_rate: 0,
-    rollover_cap: 5, rollover_weeks: 8, payment_terms: "split", status: "active", end_date: null, created_at: "2026-01-01",
+    rollover_cap: 5, rollover_weeks: 8, payment_terms: "split", status: "active", end_date: null, access_until: null, created_at: "2026-01-01",
   };
   const invoice: Invoice = { id: "i", client_id: "c", period_index: 0, invoice_no: "GET48RET001", issue_date: "2026-06-12", created_at: "" };
   const asOf = new Date(2026, 5, 20);
@@ -217,7 +218,7 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
   const client: Client = { id: "c", name: "C", email: "c@x.io", company: null, notes: null, archived: true, created_at: "2026-01-01" };
   const ret: Retainer = {
     id: "r", client_id: "c", start_date: "2026-06-12", videos_per_month: 15, monthly_price: 2400, overage_rate: 0,
-    rollover_cap: 5, rollover_weeks: 8, payment_terms: "upfront", status: "ended", end_date: "2026-10-11", created_at: "2026-01-01",
+    rollover_cap: 5, rollover_weeks: 8, payment_terms: "upfront", status: "ended", end_date: "2026-10-11", access_until: "2026-10-21", created_at: "2026-01-01",
   };
   const later = new Date(2026, 10, 20); // 20 Nov 2026
   const v = assembleClient(client, ret, [], [], later);
@@ -226,6 +227,13 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
   eq("end date: no days left", v.computation!.current.daysLeftInPeriod, 0);
   const open = assembleClient(client, { ...ret, status: "active", end_date: null }, [], [], later);
   eq("end date: open-ended keeps billing", Math.max(...open.payments.map((p) => p.periodIndex)), 5);
+
+  // Access window: stopped 12 Oct → 10 days of access, 12–21 Oct.
+  eq("access: until", accessUntilFor("2026-10-12"), "2026-10-21");
+  eq("access: open on stop day", [accessClosed(ret, "2026-10-12"), accessDaysLeft(ret, "2026-10-12")], [false, 10]);
+  eq("access: last day", [accessClosed(ret, "2026-10-21"), accessDaysLeft(ret, "2026-10-21")], [false, 1]);
+  eq("access: locked after", [accessClosed(ret, "2026-10-22"), accessDaysLeft(ret, "2026-10-22")], [true, null]);
+  eq("access: active retainer never locked", accessClosed({ status: "active", access_until: "2026-10-21" }, "2027-01-01"), false);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

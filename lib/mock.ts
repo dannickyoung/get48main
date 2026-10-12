@@ -105,6 +105,7 @@ function r(partial: Partial<Retainer> & Pick<Retainer, "start_date" | "videos_pe
     payment_terms: partial.payment_terms ?? "split",
     status: partial.status ?? "active",
     end_date: partial.end_date ?? null,
+    access_until: partial.access_until ?? null,
   };
 }
 
