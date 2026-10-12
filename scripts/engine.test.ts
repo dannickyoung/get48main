@@ -75,7 +75,7 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
   const client: Client = { id: "c", name: "C", email: "c@x.io", company: null, notes: null, archived: false, created_at: "2026-01-01" };
   const base: Retainer = {
     id: "r", client_id: "c", start_date: "2026-01-01", videos_per_month: 4, monthly_price: 2000, overage_rate: 500,
-    rollover_cap: 5, rollover_weeks: 8, payment_terms: "split", status: "active", created_at: "2026-01-01",
+    rollover_cap: 5, rollover_weeks: 8, payment_terms: "split", status: "active", end_date: null, created_at: "2026-01-01",
   };
   const month = (p: Partial<RetainerMonth>): RetainerMonth => ({
     id: "m", client_id: "c", period_index: 1, videos_per_month: null, monthly_price: null, overage_rate: null,
@@ -142,7 +142,7 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
   const client: Client = { id: "c", name: "Judy Tay", email: "judy@dfrnt.sg", company: "The DFRNT Agency", notes: null, archived: false, created_at: "2026-01-01" };
   const base: Retainer = {
     id: "r", client_id: "c", start_date: "2026-06-12", videos_per_month: 15, monthly_price: 2400, overage_rate: 0,
-    rollover_cap: 5, rollover_weeks: 8, payment_terms: "split", status: "active", created_at: "2026-01-01",
+    rollover_cap: 5, rollover_weeks: 8, payment_terms: "split", status: "active", end_date: null, created_at: "2026-01-01",
   };
   const invoice: Invoice = { id: "i", client_id: "c", period_index: 0, invoice_no: "GET48RET001", issue_date: "2026-06-12", created_at: "" };
   const asOf = new Date(2026, 5, 20);
@@ -209,6 +209,23 @@ const terms = { startDate: "2026-01-01", videosPerMonth: 8, rolloverCap: 5, roll
   eq("period: 1st-anchored index", periodIndexFor(first, new Date(2026, 7, 31)), 1);
   const jan31 = new Date(2026, 0, 31);
   eq("period: month-end anchor clamps like the engine", periodIndexFor(jan31, new Date(2026, 1, 28)), 1);
+}
+
+// End date: an upfront retainer from 12 Jun that ended 11 Oct stops billing
+// after its 12 Sep – 11 Oct cycle, even when viewed later.
+{
+  const client: Client = { id: "c", name: "C", email: "c@x.io", company: null, notes: null, archived: true, created_at: "2026-01-01" };
+  const ret: Retainer = {
+    id: "r", client_id: "c", start_date: "2026-06-12", videos_per_month: 15, monthly_price: 2400, overage_rate: 0,
+    rollover_cap: 5, rollover_weeks: 8, payment_terms: "upfront", status: "ended", end_date: "2026-10-11", created_at: "2026-01-01",
+  };
+  const later = new Date(2026, 10, 20); // 20 Nov 2026
+  const v = assembleClient(client, ret, [], [], later);
+  eq("end date: last billed period is the final cycle", Math.max(...v.payments.map((p) => p.periodIndex)), 3);
+  eq("end date: current period frozen at final cycle", v.computation!.current.periodIndex, 3);
+  eq("end date: no days left", v.computation!.current.daysLeftInPeriod, 0);
+  const open = assembleClient(client, { ...ret, status: "active", end_date: null }, [], [], later);
+  eq("end date: open-ended keeps billing", Math.max(...open.payments.map((p) => p.periodIndex)), 5);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

@@ -95,7 +95,7 @@ export function ClientDetail({
 
           {!readOnly && <ClientMembers client={client} members={members} />}
 
-          {!readOnly && <AdminClientControls client={client} />}
+          {!readOnly && <AdminClientControls client={client} retainer={retainer} />}
         </>
       )}
     </div>

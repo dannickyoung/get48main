@@ -107,6 +107,11 @@ export function assembleClient(
     engineAllotments[idx] = (videoOverrides[idx] ?? retainer.videos_per_month) + a.count;
   }
 
+  // An ended retainer is frozen at its last day: no billing months (payments,
+  // invoices) start after it. Overdue checks still use the real date.
+  const endDate = retainer.end_date ? parseDateOnly(retainer.end_date) : null;
+  const engineAsOf = endDate && endDate < asOf ? endDate : asOf;
+
   const computation = computeRetainer(
     {
       startDate: retainer.start_date,
@@ -116,8 +121,10 @@ export function assembleClient(
       monthlyVideos: engineAllotments,
     },
     deliveries,
-    asOf,
+    engineAsOf,
   );
+  // Frozen at its last day — nothing is left of the final cycle.
+  if (engineAsOf !== asOf) computation.current.daysLeftInPeriod = 0;
 
   // Overage videos per billing month → billed on that month's balance.
   const overageByPeriod: Record<number, number> = {};

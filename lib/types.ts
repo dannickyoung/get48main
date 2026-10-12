@@ -34,6 +34,8 @@ export type Retainer = {
   rollover_weeks: number;
   payment_terms: PaymentMode;
   status: RetainerStatus;
+  /** Last day of service (inclusive, 'yyyy-MM-dd'). null → open-ended. */
+  end_date: string | null;
   created_at: string;
 };
 

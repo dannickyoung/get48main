@@ -3,13 +3,17 @@ import { DeleteClientButton } from "@/components/client/DeleteClientButton";
 import { ActionForm } from "@/components/ui/ActionForm";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { Section } from "@/components/ui/Section";
-import type { Client } from "@/lib/types";
+import { DateField } from "@/components/ui/DateField";
+import { shortDate } from "@/lib/format";
+import { todaySGTString } from "@/lib/time";
+import type { Client, Retainer } from "@/lib/types";
 
 const inputCls =
   "w-full rounded-lg bg-background px-3 py-2.5 text-sm text-foreground ring-1 ring-border transition focus:ring-2 focus:ring-accent";
 const labelCls = "text-xs font-semibold uppercase tracking-wider text-faint";
 
-export function AdminClientControls({ client }: { client: Client }) {
+export function AdminClientControls({ client, retainer }: { client: Client; retainer: Retainer | null }) {
+  const ended = retainer?.status === "ended" && retainer.end_date;
   return (
     <>
       <Section title="Client details">
@@ -48,7 +52,10 @@ export function AdminClientControls({ client }: { client: Client }) {
       <Section title="Manage retainer">
         <div className="divide-y divide-border">
           {client.archived ? (
-            <Row title="Reactivate retainer" desc="Set the retainer active and move the client out of Archived. Emails them a welcome back.">
+            <Row
+              title="Reactivate retainer"
+              desc={`${ended ? `Retainer ended ${shortDate(retainer!.end_date)}. ` : ""}Set the retainer active and move the client out of Archived. Emails them a welcome back.`}
+            >
               <ActionForm action={resumeRetainer.bind(null, client.id)} success="Retainer reactivated, client emailed">
                 <SubmitButton
                   pendingLabel="Reactivating"
@@ -70,8 +77,9 @@ export function AdminClientControls({ client }: { client: Client }) {
                   </SubmitButton>
                 </ActionForm>
               </Row>
-              <Row title="Stop retainer" desc="End the retainer for good. Moves the client to Archived and emails them. They can still sign in.">
-                <ActionForm action={stopRetainer.bind(null, client.id)} success="Retainer stopped, client emailed">
+              <Row title="Stop retainer" desc="End the retainer for good on the last day of service — no billing months or invoices after it. Moves the client to Archived and emails them. They can still sign in.">
+                <ActionForm action={stopRetainer.bind(null, client.id)} success="Retainer stopped, client emailed" className="flex items-center gap-2">
+                  <DateField name="end_date" defaultValue={todaySGTString()} required className="w-40" />
                   <SubmitButton
                     pendingLabel="Stopping"
                     className="rounded-lg px-4 py-2 text-sm font-medium text-bad ring-1 ring-border transition hover:ring-border-strong"
